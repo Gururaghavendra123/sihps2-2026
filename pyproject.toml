@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sigid"
+version = "0.5.0"
+description = "SIG-ID — SIH26147 (NTRO): automated .IQ/.wav signal analysis, demod, FEC/interleave, and catalog-bounded identification"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "reedsolo",
+    "pyldpc",
+]
+
+[project.optional-dependencies]
+gui = ["PyQt6", "pyqtgraph"]
+web = ["fastapi", "uvicorn", "python-multipart"]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

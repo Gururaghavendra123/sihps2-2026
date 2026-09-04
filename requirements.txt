@@ -1,0 +1,12 @@
+numpy
+scipy
+reedsolo
+pyldpc
+setuptools
+wheel
+pytest
+PyQt6
+pyqtgraph
+fastapi
+uvicorn
+python-multipart

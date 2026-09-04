@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SIG-ID — Analyst Dashboard</title>
+<link rel="stylesheet" href="/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="taskbar">
+  <div class="start bevel-out"><span class="logo"></span> SIG-ID</div>
+  <nav>
+    <a class="btn9x bevel-out" href="/">◀ Overview</a>
+  </nav>
+  <div class="clock" id="tb-clock">00:00:00</div>
+</div>
+
+<div class="dash-wrap">
+
+  <div class="win control-win">
+    <div class="winbar">
+      <span class="dots"><span></span><span></span><span></span></span>
+      <span class="title">SIG-ID.EXE — Control Panel</span>
+      <span class="winctl bevel-out">_</span><span class="winctl bevel-out">□</span><span class="winctl bevel-out">x</span>
+    </div>
+    <div class="winbody">
+      <div class="field">
+        <input id="file-input" type="file" accept=".iq,.wav">
+        <button id="upload-btn">📂 Load .iq / .wav</button>
+      </div>
+      <div class="field">
+        <select id="sample-select"><option value="">-- or pick a sample --</option></select>
+      </div>
+      <div class="field"><div class="lcd status-lcd" id="params-label">BW: -- | SNR: -- | RATE: --</div></div>
+      <div class="field" style="margin-left:auto"><div class="lcd status-lcd" id="status-label">NO FILE LOADED</div></div>
+
+      <div class="field" style="width:100%; border-top:1px solid var(--face-dark); padding-top:10px; margin-top:2px;">
+        <label>MOD:</label>
+        <select id="mod-select">
+          <option value="auto" selected>auto-detect (all 6)</option>
+          <option value="bpsk">bpsk</option>
+          <option value="qpsk">qpsk</option>
+          <option value="8psk">8psk</option>
+          <option value="16qam">16qam</option>
+          <option value="2fsk">2fsk</option>
+          <option value="4fsk">4fsk</option>
+        </select>
+        <label>SPS:</label>
+        <input id="sps-input" type="number" value="4" min="1" max="64" style="width:60px">
+        <label>PAYLOAD BITS:</label>
+        <input id="payload-input" type="number" value="256" min="8" max="1000000" style="width:90px">
+        <button id="search-btn" class="accent" disabled>▶ RUN HYPOTHESIS SEARCH</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="win">
+      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">WAVEFORM.SCOPE</span><span class="winctl bevel-out">x</span></div>
+      <div class="winbody dark"><div class="chart-wrap"><canvas id="waveform-chart"></canvas></div></div>
+    </div>
+    <div class="win">
+      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">SPECTRUM.FFT</span><span class="winctl bevel-out">x</span></div>
+      <div class="winbody dark"><div class="chart-wrap"><canvas id="fft-chart"></canvas></div></div>
+    </div>
+    <div class="win">
+      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">WATERFALL.SPEC</span><span class="winctl bevel-out">x</span></div>
+      <div class="winbody dark"><div class="chart-wrap"><canvas id="spec-canvas" height="210"></canvas></div></div>
+    </div>
+    <div class="win">
+      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">CONSTELLATION.IQ</span><span class="winctl bevel-out">x</span></div>
+      <div class="winbody dark"><div class="chart-wrap"><canvas id="constellation-chart"></canvas></div></div>
+    </div>
+    <div class="win">
+      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">EVIDENCE.LOG</span><span class="winctl bevel-out">x</span></div>
+      <div class="winbody dark"><div class="lcd" id="evidence-box">Load a signal, then Run Hypothesis Search to score all 96 modulation x FEC x interleaver combos.</div></div>
+    </div>
+    <div class="win">
+      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">BITSTREAM.LOG</span><span class="winctl bevel-out">x</span></div>
+      <div class="winbody dark"><div class="lcd" id="bitstream-box">run a search to populate</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="/app.js"></script>
+<script>
+function tbtick() {
+  const el = document.getElementById('tb-clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-GB');
+}
+tbtick();
+setInterval(tbtick, 1000);
+</script>
+</body>
+</html>

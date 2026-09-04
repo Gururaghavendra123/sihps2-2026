@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SIG-ID — SIH26147</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="taskbar">
+  <div class="start bevel-out"><span class="logo"></span> TEAM VERTEX</div>
+  <nav>
+    <a class="btn9x bevel-out" href="/dashboard.html">▶ Open Dashboard</a>
+  </nav>
+  <div class="clock" id="clock">00:00:00</div>
+</div>
+
+<div class="landing">
+
+  <div class="win hero-win">
+    <div class="winbar">
+      <span class="dots"><span></span><span></span><span></span></span>
+      <span class="title">SIG-ID.EXE — Signal Intelligence Player</span>
+      <span class="winctl bevel-out">_</span><span class="winctl bevel-out">□</span><span class="winctl bevel-out">x</span>
+    </div>
+    <div class="winbody dark">
+      <div class="brandmark">SIG-ID<span class="blink">_</span></div>
+      <div class="tagline">SIH26147 · NTRO · TEAM VERTEX</div>
+      <p class="lede">
+        Feed it an unknown .iq / .wav recording. It estimates the parameters, demodulates,
+        de-interleaves, FEC-decodes, and tells you — with evidence, not a confidence percentage —
+        which modulation, FEC, and interleaver were used, and recovers the exact original bitstream.
+      </p>
+      <div class="eq-bars" id="eq-bars"></div>
+      <div class="actions">
+        <div class="knob-wrap"><div class="knob" style="--rot:-40deg"></div><span>VOL</span></div>
+        <button class="accent" onclick="location.href='/dashboard.html'">▶ LAUNCH DASHBOARD</button>
+        <div class="knob-wrap"><div class="knob" style="--rot:15deg"></div><span>BAL</span></div>
+      </div>
+      <div class="marquee-strip"><span>*** SIG-ID v1.0 *** 6 MODULATIONS · 4 FEC TYPES · 4 INTERLEAVERS · 96 HYPOTHESES SCORED PER CAPTURE *** CRC-16 VERIFIED, NOT GUESSED *** TEAM VERTEX — SIH26147 — NTRO ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="win">
+      <div class="winbar">
+        <span class="dots"><span></span><span></span><span></span></span>
+        <span class="title">PROBLEM_STATEMENT.TXT</span>
+        <span class="winctl bevel-out">x</span>
+      </div>
+      <div class="winbody">
+        <div class="readme"><b>SIH26147 — National Technical Research Organisation</b>
+
+Given an unknown RF recording, automatically:
+  1. Identify parameters — sample rate, modulation, FEC, interleaving
+  2. Demodulate — FSK, QAM, PSK
+  3. De-interleave — block, convolutional, diagonal, pseudo-random
+  4. FEC-decode — Viterbi, Reed-Solomon, concatenated, LDPC
+  5. Correlate the bit-stream, split header / payload
+  6. Show it all in a GUI
+
+No dataset given — but the PS names the exact candidate
+catalog. Not open-world blind detection. A bounded
+search problem. We solved it as that.</div>
+      </div>
+    </div>
+
+    <div class="win">
+      <div class="winbar">
+        <span class="dots"><span></span><span></span><span></span></span>
+        <span class="title">VERTEX_SOLVED.LOG</span>
+        <span class="winctl bevel-out">x</span>
+      </div>
+      <div class="winbody dark">
+        <ul class="checklist">
+          <li><span class="box">[x]</span> .iq / .wav parameter extraction</li>
+          <li><span class="box">[x]</span> All 6 modulations demodulated</li>
+          <li><span class="box">[x]</span> All 4 interleavers, round-trip verified</li>
+          <li><span class="box">[x]</span> All 4 FEC decoders, real error correction</li>
+          <li><span class="box">[x]</span> Sync-word correlation, header/payload split</li>
+          <li><span class="box">[x]</span> Modulation auto-detected, not picked</li>
+          <li><span class="box">[x]</span> 96 hypotheses scored + ranked, CRC-verified</li>
+          <li><span class="box">[x]</span> Desktop + web dashboard, same real pipeline</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="desktop-footer">TEAM VERTEX — SIG-ID — SIH26147</footer>
+
+<script>
+function tick() {
+  const el = document.getElementById('clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-GB');
+}
+tick();
+setInterval(tick, 1000);
+
+const eqEl = document.getElementById('eq-bars');
+if (eqEl) eqEl.innerHTML = '<i></i>'.repeat(24);
+</script>
+
+</body>
+</html>
