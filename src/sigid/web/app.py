@@ -25,6 +25,7 @@ from ..dsp.analysis import (
     extract_constellation,
 )
 from ..engine.search import search_hypotheses, search_all_modulations, confidence_label
+from ..engine.adaptive_search import search_adaptive
 
 DATA_DIR = Path(__file__).resolve().parents[3] / "data"
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -152,13 +153,23 @@ def search(
     modulation: str = Form(...),  # "auto" searches modulation too, see search_all_modulations
     sps: int = Form(...),
     n_payload_bits: int = Form(...),
+    mode: str = Form("exhaustive"),  # "exhaustive" (default) or "adaptive"
 ):
     session = _SESSIONS.get(session_id)
     if session is None:
         raise HTTPException(404, "unknown session_id — load a signal first")
 
     iq, fs = session["iq"], session["fs"]
-    if modulation == "auto":
+    telemetry_json = None
+    adaptive_summary_json = None
+
+    if mode == "adaptive":
+        results, summary, telemetry_list, adaptive_summary = search_adaptive(
+            iq, sps, fs, n_payload_bits,
+        )
+        telemetry_json = [t.to_dict() for t in telemetry_list]
+        adaptive_summary_json = adaptive_summary.to_dict()
+    elif modulation == "auto":
         results, summary = search_all_modulations(iq, sps, fs, n_payload_bits)
     else:
         tone_spacing = fs / sps
@@ -181,7 +192,11 @@ def search(
         del json_summary["payload"]
     json_summary["confidence"] = confidence_label(summary)
 
-    return {"results": json_results, "summary": json_summary}
+    resp = {"results": json_results, "summary": json_summary}
+    if telemetry_json is not None:
+        resp["telemetry"] = telemetry_json
+        resp["adaptive_summary"] = adaptive_summary_json
+    return resp
 
 
 app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")

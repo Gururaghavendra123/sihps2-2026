@@ -22,6 +22,7 @@ from sigid.dsp.analysis import (
     extract_constellation,
 )
 from sigid.engine.search import search_hypotheses, search_all_modulations, confidence_label
+from sigid.engine.adaptive_search import search_adaptive
 
 MODULATIONS = ["bpsk", "qpsk", "8psk", "16qam", "2fsk", "4fsk"]
 AUTO_MODULATION = "auto-detect (all 6)"
@@ -51,6 +52,12 @@ class MainWindow(QtWidgets.QMainWindow):
         root.addLayout(toolbar)
 
         search_bar = QtWidgets.QHBoxLayout()
+        search_bar.addWidget(QtWidgets.QLabel("Engine:"))
+        self.engine_combo = QtWidgets.QComboBox()
+        self.engine_combo.addItems(["exhaustive", "adaptive"])
+        self.engine_combo.setCurrentText("exhaustive")
+        search_bar.addWidget(self.engine_combo)
+
         search_bar.addWidget(QtWidgets.QLabel("Modulation:"))
         self.mod_combo = QtWidgets.QComboBox()
         self.mod_combo.addItems([AUTO_MODULATION] + MODULATIONS)
@@ -188,18 +195,29 @@ class MainWindow(QtWidgets.QMainWindow):
 
         scheme = self.mod_combo.currentText()
         auto = scheme == AUTO_MODULATION
+        engine_mode = self.engine_combo.currentText()
         sps = self.sps_spin.value()
         n_payload_bits = self.payload_spin.value()
         fs = self.loaded_signal.fs
 
         self.search_btn.setEnabled(False)
-        self.status_label.setText(
-            "Searching 6 modulations x 4 FEC x 4 interleavers (96 hypotheses)..." if auto
-            else f"Searching {scheme} x 4 FEC x 4 interleavers..."
-        )
+        mode_label = engine_mode.upper()
+        if engine_mode == "adaptive":
+            self.status_label.setText(f"[{mode_label}] Searching with adaptive pruning...")
+        elif auto:
+            self.status_label.setText(f"[{mode_label}] Searching 6 modulations x 4 FEC x 4 interleavers (96 hypotheses)...")
+        else:
+            self.status_label.setText(f"[{mode_label}] Searching {scheme} x 4 FEC x 4 interleavers...")
         QtWidgets.QApplication.processEvents()
+
+        telemetry_list = None
+        adaptive_summary = None
         try:
-            if auto:
+            if engine_mode == "adaptive":
+                results, summary, telemetry_list, adaptive_summary = search_adaptive(
+                    self.loaded_signal.iq, sps, fs, n_payload_bits,
+                )
+            elif auto:
                 results, summary = search_all_modulations(self.loaded_signal.iq, sps, fs, n_payload_bits)
             else:
                 tone_spacing = fs / sps
@@ -214,8 +232,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.search_btn.setEnabled(True)
 
         self._render_evidence(results, summary)
+        if telemetry_list is not None and adaptive_summary is not None:
+            self._append_telemetry(telemetry_list, adaptive_summary)
         self._render_bitstream(summary)
-        self.status_label.setText(f"Search complete — {confidence_label(summary)}")
+        self.status_label.setText(f"[{mode_label}] Search complete — {confidence_label(summary)}")
 
     def _render_evidence(self, results: list, summary: dict) -> None:
         label = confidence_label(summary)
@@ -243,6 +263,26 @@ class MainWindow(QtWidgets.QMainWindow):
             lines.append("")
 
         self.evidence_box.setPlainText("\n".join(lines))
+
+    def _append_telemetry(self, telemetry_list, adaptive_summary) -> None:
+        """Append adaptive search telemetry to the evidence panel."""
+        lines = ["\n─── ADAPTIVE TELEMETRY ───", ""]
+        lines.append(f"Decodes run: {adaptive_summary.total_decodes_run} / {adaptive_summary.total_decodes_possible}")
+        reduction = adaptive_summary.search_space_reduction_pct
+        lines.append(f"Search space reduction: {reduction:.1f}%")
+        lines.append(f"Early exit: {'YES ✔' if adaptive_summary.early_exit_triggered else 'no'}")
+        if adaptive_summary.modulations_pruned_by_classifier:
+            lines.append(f"Pruned by classifier: {', '.join(adaptive_summary.modulations_pruned_by_classifier)}")
+        if adaptive_summary.modulations_pruned_by_sync:
+            lines.append(f"Pruned by sync gate: {', '.join(adaptive_summary.modulations_pruned_by_sync)}")
+        lines.append("")
+        for t in telemetry_list:
+            status = "✗ PRUNED" if t.sync_pruned else (
+                "✓ WINNER (early exit)" if t.early_exit else f"✓ tested ({t.decodes_run} decodes)"
+            )
+            lines.append(f"{t.modulation.upper()} [rank {t.mod_rank}] {status}")
+        current = self.evidence_box.toPlainText()
+        self.evidence_box.setPlainText(current + "\n".join(lines))
 
     def _render_bitstream(self, summary: dict) -> None:
         if summary.get("status") != "verified":

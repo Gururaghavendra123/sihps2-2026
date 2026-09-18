@@ -36,6 +36,10 @@
       <div class="field" style="margin-left:auto"><div class="lcd status-lcd" id="status-label">NO FILE LOADED</div></div>
 
       <div class="field" style="width:100%; border-top:1px solid var(--face-dark); padding-top:10px; margin-top:2px;">
+        <label>ENGINE:</label>
+        <label class="radio-label"><input type="radio" name="engine-mode" value="exhaustive" checked> Exhaustive (96)</label>
+        <label class="radio-label"><input type="radio" name="engine-mode" value="adaptive"> Adaptive (pruned)</label>
+        <span style="width:12px; display:inline-block"></span>
         <label>MOD:</label>
         <select id="mod-select">
           <option value="auto" selected>auto-detect (all 6)</option>
@@ -79,6 +83,10 @@
     <div class="win">
       <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">BITSTREAM.LOG</span><span class="winctl bevel-out">x</span></div>
       <div class="winbody dark"><div class="lcd" id="bitstream-box">run a search to populate</div></div>
+    </div>
+    <div class="win" id="telemetry-win" style="display:none">
+      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">ADAPTIVE.TELEMETRY</span><span class="winctl bevel-out">x</span></div>
+      <div class="winbody dark"><div class="lcd" id="telemetry-box">select Adaptive mode and run a search</div></div>
     </div>
   </div>
 

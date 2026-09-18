@@ -183,23 +183,27 @@ $("search-btn").addEventListener("click", async () => {
   const modulation = $("mod-select").value;
   const sps = $("sps-input").value;
   const payloadBits = $("payload-input").value;
+  const mode = document.querySelector('input[name="engine-mode"]:checked').value;
 
   const form = new FormData();
   form.append("session_id", sessionId);
   form.append("modulation", modulation);
   form.append("sps", sps);
   form.append("n_payload_bits", payloadBits);
+  form.append("mode", mode);
 
   $("search-btn").disabled = true;
-  $("status-label").textContent = modulation === "auto"
-    ? "Searching 6 modulations x 4 FEC x 4 interleavers (96 hypotheses)..."
-    : `Searching ${modulation} x 4 FEC x 4 interleavers...`;
+  const modeLabel = mode === "adaptive" ? "ADAPTIVE" : "EXHAUSTIVE";
+  $("status-label").textContent = modulation === "auto" || mode === "adaptive"
+    ? `[${modeLabel}] Searching modulations × FEC × interleavers...`
+    : `[${modeLabel}] Searching ${modulation} × 4 FEC × 4 interleavers...`;
   try {
     const resp = await fetch("/api/search", { method: "POST", body: form });
     const data = await resp.json();
     renderEvidence(data.results, data.summary);
     renderBitstream(data.summary);
-    $("status-label").textContent = `Search complete — ${data.summary.confidence}`;
+    renderTelemetry(data.telemetry, data.adaptive_summary, mode);
+    $("status-label").textContent = `[${modeLabel}] Search complete — ${data.summary.confidence}`;
   } finally {
     $("search-btn").disabled = false;
   }
@@ -239,6 +243,35 @@ function renderBitstream(summary) {
     `RECOVERED PAYLOAD (${bits.length} bits) — CRC VERIFIED\n` +
     `${modLine}FEC: ${summary.fec}   Interleaver: ${summary.interleaver}   Score: ${summary.score.toFixed(0)}\n\n` +
     `${preview}${suffix}`;
+}
+
+function renderTelemetry(telemetry, adaptiveSummary, mode) {
+  const win = $("telemetry-win");
+  const box = $("telemetry-box");
+  if (mode !== "adaptive" || !telemetry || !adaptiveSummary) {
+    if (win) win.style.display = "none";
+    return;
+  }
+  if (win) win.style.display = "";
+
+  const lines = ["ADAPTIVE SEARCH TELEMETRY", ""];
+  lines.push(`Decodes run: ${adaptiveSummary.total_decodes_run} / ${adaptiveSummary.total_decodes_possible}`);
+  lines.push(`Search space reduction: ${adaptiveSummary.search_space_reduction_pct}%`);
+  lines.push(`Early exit: ${adaptiveSummary.early_exit_triggered ? "YES ✔" : "no"}`);
+  if (adaptiveSummary.modulations_pruned_by_classifier.length > 0) {
+    lines.push(`Modulations pruned (classifier): ${adaptiveSummary.modulations_pruned_by_classifier.join(", ")}`);
+  }
+  if (adaptiveSummary.modulations_pruned_by_sync.length > 0) {
+    lines.push(`Modulations pruned (sync gate): ${adaptiveSummary.modulations_pruned_by_sync.join(", ")}`);
+  }
+  lines.push("");
+  for (const t of telemetry) {
+    const status = t.sync_pruned ? "✗ PRUNED (sync)" : (t.early_exit ? "✓ WINNER (early exit)" : `✓ tested (${t.decodes_run} decodes)`);
+    lines.push(`${t.modulation.toUpperCase()} [rank ${t.mod_rank}, score ${t.mod_score.toFixed(2)}]  ${status}`);
+    if (t.cfo_hz !== 0) lines.push(`  CFO: ${t.cfo_hz.toFixed(1)} Hz`);
+    if (!t.sync_pruned) lines.push(`  Sync correlation: ${t.sync_correlation.toFixed(2)}`);
+  }
+  box.textContent = lines.join("\n");
 }
 
 initCharts();
