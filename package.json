@@ -1,0 +1,12 @@
+{
+  "name": "sig-id",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SIG-ID Autonomous Signal Intelligence Platform",
+  "scripts": {
+    "build": "echo 'Build complete'"
+  },
+  "devDependencies": {
+    "wrangler": "^3.111.0"
+  }
+}
