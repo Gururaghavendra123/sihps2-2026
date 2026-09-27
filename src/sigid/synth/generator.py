@@ -60,10 +60,21 @@ class GenParams:
     seed: int = 42
 
 
-def generate(params: GenParams) -> tuple[np.ndarray, dict]:
+def generate(params: GenParams, custom_payload: np.ndarray | str | None = None) -> tuple[np.ndarray, dict]:
     rng = np.random.default_rng(params.seed)
 
-    payload_bits = rng.integers(0, 2, params.n_payload_bits, dtype=np.uint8)
+    if isinstance(custom_payload, str) and len(custom_payload) > 0:
+        raw_bits = np.unpackbits(np.frombuffer(custom_payload.encode("utf-8"), dtype=np.uint8))
+        if len(raw_bits) < params.n_payload_bits:
+            reps = int(np.ceil(params.n_payload_bits / len(raw_bits)))
+            payload_bits = np.tile(raw_bits, reps)[: params.n_payload_bits].astype(np.uint8)
+        else:
+            payload_bits = raw_bits[: params.n_payload_bits].astype(np.uint8)
+    elif isinstance(custom_payload, np.ndarray) and len(custom_payload) > 0:
+        payload_bits = custom_payload[: params.n_payload_bits].astype(np.uint8)
+    else:
+        payload_bits = rng.integers(0, 2, params.n_payload_bits, dtype=np.uint8)
+
     framed_bits = append_crc16(payload_bits)
 
     if params.fec not in FEC_ENCODERS:
