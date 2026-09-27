@@ -25,6 +25,14 @@
 </head>
 <body>
 
+<!-- Ambient Subtle Video Background -->
+<div class="video-background-wrapper" aria-hidden="true">
+  <video class="video-background-player" id="bg-video-el" autoplay loop muted playsinline preload="auto">
+    <source src="/bg-video.mp4" type="video/mp4">
+  </video>
+  <div class="video-background-overlay"></div>
+</div>
+
 <!-- Floating 28px Pill Navigation (Tomorro Pressed Seed Nav) -->
 <div class="command-header-wrapper">
   <header class="command-header">
@@ -323,6 +331,14 @@ setInterval(updateClock, 1000);
   }
   render();
 })();
+
+// Ambient Background Video Safety Autoplay
+const bgVid = document.getElementById('bg-video-el');
+if (bgVid) {
+  bgVid.play().catch(() => {
+    document.addEventListener('click', () => { bgVid.play(); }, { once: true });
+  });
+}
 </script>
 
 </body>

@@ -469,6 +469,44 @@ body {
 }
 
 /* ============================================================
+   AMBIENT SUBTLE VIDEO BACKGROUND (Landing Page)
+   ============================================================ */
+.video-background-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.video-background-player {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  opacity: 0.22;
+  filter: saturate(1.4) contrast(1.1) brightness(0.8);
+  pointer-events: none;
+}
+
+.video-background-overlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 50% 30%, rgba(12, 23, 13, 0.4) 0%, rgba(12, 23, 13, 0.82) 65%, #0c170d 100%),
+    linear-gradient(180deg, rgba(12, 23, 13, 0.6) 0%, transparent 25%, transparent 75%, rgba(12, 23, 13, 0.9) 100%);
+  pointer-events: none;
+}
+
+/* ============================================================
    TOMORRO HERO & LANDING PAGE (index.html)
    Atmospheric Greenhouse Orb + Ozik Stacking Headline
    ============================================================ */
@@ -477,6 +515,7 @@ body {
   margin: 0 auto;
   padding: 0 32px;
   position: relative;
+  z-index: 2;
 }
 
 /* Atmospheric Botanical Glow Orb (400-600px gradient) */
@@ -617,27 +656,31 @@ body {
 }
 
 .tomorro-mockup-card {
-  background: #152717;
-  border: 1px solid var(--border-card);
+  background: rgba(16, 32, 19, 0.6);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-cards);
-  box-shadow: var(--shadow-mockup);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   overflow: hidden;
   position: relative;
-  transform: rotate(-1.5deg);
-  transition: transform 0.3s ease;
+  transform: none;
+  transition: box-shadow 0.3s ease;
 }
 
 .tomorro-mockup-card:hover {
-  transform: rotate(0deg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .tomorro-mockup-header {
   padding: 16px 24px;
-  border-bottom: 1px solid rgba(183, 189, 165, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #122314;
+  background: rgba(10, 22, 12, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .tomorro-mockup-body {
