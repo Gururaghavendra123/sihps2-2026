@@ -9,17 +9,76 @@
   /* Local canvas and interactive stage for Tomorro mockup */
   .tomorro-scope-viewport {
     width: 100%;
-    height: 360px;
-    background: #0e1c10;
+    height: 410px;
+    background: radial-gradient(circle at center, #0d2212 0%, #061108 100%);
     border-radius: 14px;
     position: relative;
-    border: 1px solid rgba(104, 239, 63, 0.2);
+    border: 1px solid rgba(104, 239, 63, 0.28);
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.7), 0 8px 32px rgba(0, 0, 0, 0.4);
     overflow: hidden;
+    cursor: crosshair;
   }
   .tomorro-scope-viewport canvas {
     width: 100%;
     height: 100%;
     display: block;
+  }
+  .scope-pattern-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(8, 18, 10, 0.7);
+    padding: 3px 4px;
+    border-radius: 20px;
+    border: 1px solid rgba(104, 239, 63, 0.2);
+  }
+  .scope-tab {
+    background: transparent;
+    border: none;
+    color: var(--color-pale-fern);
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    letter-spacing: 0.02em;
+    user-select: none;
+  }
+  .scope-tab:hover {
+    color: var(--color-pure-white);
+    background: rgba(104, 239, 63, 0.12);
+  }
+  .scope-tab.active {
+    background: var(--color-electric-sprout);
+    color: #08160a;
+    box-shadow: 0 0 12px rgba(104, 239, 63, 0.5);
+    font-weight: 700;
+  }
+  .scope-tab.auto-toggle {
+    border-left: 1px solid rgba(183, 189, 165, 0.25);
+    padding-left: 8px;
+    margin-left: 2px;
+  }
+  .scope-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-electric-sprout);
+    box-shadow: 0 0 10px var(--color-electric-sprout);
+    animation: statusPulse 2s infinite ease-in-out;
+  }
+  @keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px var(--color-electric-sprout); }
+    50% { opacity: 0.55; transform: scale(0.9); box-shadow: 0 0 4px var(--color-electric-sprout); }
+  }
+  .scope-metric-val {
+    transition: transform 0.25s ease, color 0.25s ease;
+  }
+  .scope-metric-val.pulse {
+    transform: scale(1.08);
+    color: #9aff78 !important;
   }
 </style>
 </head>
@@ -126,41 +185,51 @@
          ============================================================ -->
     <div class="tomorro-mockup-wrapper" id="capabilities">
       <div class="tomorro-mockup-card">
-        <div class="tomorro-mockup-header">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-electric-sprout); box-shadow: 0 0 8px var(--color-electric-sprout);"></span>
-            <span style="font-family: var(--font-aeonik); font-size: 13px; font-weight: 600; color: var(--color-pure-white);">
-              CARRIER RECOVERY // 16-QAM POLAR CLUSTERING
+        <div class="tomorro-mockup-header" style="flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="scope-status-dot"></span>
+            <span id="scope-header-title" style="font-family: var(--font-aeonik); font-size: 13px; font-weight: 600; color: var(--color-pure-white); letter-spacing: 0.04em;">
+              CARRIER RECOVERY // 16-QAM VECTOR TRAJECTORY
             </span>
           </div>
+
+          <!-- Interactive Pattern Switcher -->
+          <div class="scope-pattern-tabs" id="scope-tabs-container">
+            <button type="button" class="scope-tab active" data-mode="16qam">16-QAM</button>
+            <button type="button" class="scope-tab" data-mode="8psk">8-PSK</button>
+            <button type="button" class="scope-tab" data-mode="qpsk">QPSK</button>
+            <button type="button" class="scope-tab" data-mode="lissajous">Lissajous</button>
+            <button type="button" class="scope-tab auto-toggle active" id="scope-auto-btn" title="Toggle Auto-Cycle">Auto ⟳</button>
+          </div>
+
           <div style="display: flex; gap: 8px;">
-            <span class="tomorro-badge">LOCK: SYNC 1.000</span>
-            <span class="tomorro-badge">BER: &lt; 10⁻⁵</span>
+            <span class="tomorro-badge" id="scope-lock-badge">LOCK: SYNC 1.000</span>
+            <span class="tomorro-badge" id="scope-ber-badge">BER: &lt; 10⁻⁵</span>
           </div>
         </div>
 
         <div class="tomorro-mockup-body">
-          <div class="tomorro-scope-viewport">
+          <div class="tomorro-scope-viewport" id="scope-viewport-wrap">
             <canvas id="tomorro-scope-canvas"></canvas>
           </div>
 
           <!-- Quick Metrics Bar -->
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(183, 189, 165, 0.15);">
             <div>
-              <div style="font-size: 11px; color: var(--color-lichen-sage); text-transform: uppercase;">Modulation</div>
-              <div style="font-size: 20px; font-weight: 700; color: var(--color-electric-sprout); margin-top: 4px;">16-QAM</div>
+              <div style="font-size: 11px; color: var(--color-lichen-sage); text-transform: uppercase; letter-spacing: 0.06em;">Modulation</div>
+              <div id="scope-metric-mod" class="scope-metric-val" style="font-size: 20px; font-weight: 700; color: var(--color-electric-sprout); margin-top: 4px;">16-QAM</div>
             </div>
             <div>
-              <div style="font-size: 11px; color: var(--color-lichen-sage); text-transform: uppercase;">Symbol Rate</div>
-              <div style="font-size: 20px; font-weight: 700; color: var(--color-pure-white); margin-top: 4px;">50.0 kSym/s</div>
+              <div style="font-size: 11px; color: var(--color-lichen-sage); text-transform: uppercase; letter-spacing: 0.06em;">Symbol Rate</div>
+              <div id="scope-metric-rate" class="scope-metric-val" style="font-size: 20px; font-weight: 700; color: var(--color-pure-white); margin-top: 4px;">50.0 kSym/s</div>
             </div>
             <div>
-              <div style="font-size: 11px; color: var(--color-lichen-sage); text-transform: uppercase;">Estimated SNR</div>
-              <div style="font-size: 20px; font-weight: 700; color: var(--color-electric-sprout); margin-top: 4px;">21.6 dB</div>
+              <div style="font-size: 11px; color: var(--color-lichen-sage); text-transform: uppercase; letter-spacing: 0.06em;">Estimated SNR</div>
+              <div id="scope-metric-snr" class="scope-metric-val" style="font-size: 20px; font-weight: 700; color: var(--color-electric-sprout); margin-top: 4px;">21.6 dB</div>
             </div>
             <div>
-              <div style="font-size: 11px; color: var(--color-lichen-sage); text-transform: uppercase;">Codec Engine</div>
-              <div style="font-size: 20px; font-weight: 700; color: var(--color-pure-white); margin-top: 4px;">Viterbi (K=7)</div>
+              <div style="font-size: 11px; color: var(--color-lichen-sage); text-transform: uppercase; letter-spacing: 0.06em;">Codec Engine</div>
+              <div id="scope-metric-codec" class="scope-metric-val" style="font-size: 20px; font-weight: 700; color: var(--color-pure-white); margin-top: 4px;">Viterbi (K=7)</div>
             </div>
           </div>
         </div>
@@ -245,91 +314,714 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-// Interactive 16-QAM Polar Demodulation Scope on Forest Depths
+// Interactive RF Cyberdeck Scope & Constellation Analyzer
 (function initTomorroScope() {
   const canvas = document.getElementById('tomorro-scope-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let width, height;
+
+  // UI Element bindings
+  const titleEl = document.getElementById('scope-header-title');
+  const metricMod = document.getElementById('scope-metric-mod');
+  const metricRate = document.getElementById('scope-metric-rate');
+  const metricSnr = document.getElementById('scope-metric-snr');
+  const metricCodec = document.getElementById('scope-metric-codec');
+  const lockBadge = document.getElementById('scope-lock-badge');
+  const berBadge = document.getElementById('scope-ber-badge');
+  const tabsContainer = document.getElementById('scope-tabs-container');
+  const viewportWrap = document.getElementById('scope-viewport-wrap');
+
+  let width = 0;
+  let height = 0;
+  const dpr = window.devicePixelRatio || 1;
 
   function resize() {
-    width = canvas.width = canvas.parentElement.clientWidth;
-    height = canvas.height = canvas.parentElement.clientHeight;
+    if (!canvas.parentElement) return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    width = rect.width;
+    height = rect.height;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
   }
   window.addEventListener('resize', resize);
   resize();
 
-  // 16-QAM constellation centroids
-  const symbols = [];
-  const levels = [-3, -1, 1, 3];
-  for (let i of levels) {
-    for (let q of levels) {
-      symbols.push({ i: i / 3.4, q: q / 3.4 });
+  // Modulation Profiles with true RF parameters & coordinates
+  const MODES = {
+    '16qam': {
+      name: '16-QAM',
+      title: 'CARRIER RECOVERY // 16-QAM VECTOR TRAJECTORY',
+      rate: '50.0 kSym/s',
+      snr: '21.6 dB',
+      codec: 'Viterbi (K=7)',
+      evm: '1.14% RMS',
+      lock: 'LOCK: SYNC 1.000',
+      ber: 'BER: < 10⁻⁵',
+      getPoints: () => {
+        const pts = [];
+        const levels = [-3, -1, 1, 3];
+        const scale = 3.65;
+        for (let i of levels) {
+          for (let q of levels) {
+            pts.push({ i: i / scale, q: q / scale });
+          }
+        }
+        return pts;
+      }
+    },
+    '8psk': {
+      name: '8-PSK',
+      title: 'CARRIER RECOVERY // 8-PSK PHASE-LOCKED STAR',
+      rate: '75.0 kSym/s',
+      snr: '24.8 dB',
+      codec: 'Reed-Solomon (255,223)',
+      evm: '0.82% RMS',
+      lock: 'LOCK: SYNC 1.000',
+      ber: 'BER: < 10⁻⁶',
+      getPoints: () => {
+        const pts = [];
+        const r = 0.76;
+        for (let k = 0; k < 8; k++) {
+          const theta = (k * Math.PI) / 4;
+          pts.push({ i: r * Math.cos(theta), q: r * Math.sin(theta) });
+        }
+        return pts;
+      }
+    },
+    'qpsk': {
+      name: 'QPSK',
+      title: 'CARRIER RECOVERY // QPSK QUAD-VECTOR CONSTELLATION',
+      rate: '100.0 kSym/s',
+      snr: '19.2 dB',
+      codec: 'Concatenated (RS+Conv)',
+      evm: '1.42% RMS',
+      lock: 'LOCK: SYNC 1.000',
+      ber: 'BER: < 10⁻⁵',
+      getPoints: () => {
+        const r = 0.62;
+        return [
+          { i: r, q: r },
+          { i: -r, q: r },
+          { i: -r, q: -r },
+          { i: r, q: -r }
+        ];
+      }
+    },
+    'lissajous': {
+      name: 'Lissajous',
+      title: 'RF SPECTRUM // LISSAJOUS PHASE TRAJECTORY',
+      rate: '125.0 kSym/s',
+      snr: '27.4 dB',
+      codec: 'LDPC BP (Tanner)',
+      evm: '0.58% RMS',
+      lock: 'LOCK: ORBITAL 1.000',
+      ber: 'BER: < 10⁻⁷',
+      getPoints: () => {
+        const pts = [];
+        for (let k = 0; k < 12; k++) {
+          const t = (k * 2 * Math.PI) / 12;
+          pts.push({
+            i: 0.74 * Math.sin(3 * t),
+            q: 0.74 * Math.cos(2 * t)
+          });
+        }
+        return pts;
+      }
     }
+  };
+
+  const modeKeys = ['16qam', '8psk', 'qpsk', 'lissajous'];
+  let currentModeKey = '16qam';
+  let isAutoCycling = true;
+  let autoCycleTimer = 0;
+
+  // Maximum constellation nodes (16 for 16-QAM)
+  const MAX_NODES = 16;
+  const nodes = [];
+  for (let k = 0; k < MAX_NODES; k++) {
+    const sparks = [];
+    for (let s = 0; s < 14; s++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.sqrt(-2 * Math.log(Math.max(1e-6, Math.random()))) * 0.024;
+      sparks.push({
+        offsetX: Math.cos(angle) * dist,
+        offsetY: Math.sin(angle) * dist,
+        size: Math.random() * 0.9 + 1.1,
+        baseAlpha: Math.random() * 0.45 + 0.35
+      });
+    }
+
+    nodes.push({
+      currI: 0,
+      currQ: 0,
+      targetI: 0,
+      targetQ: 0,
+      active: true,
+      alpha: 1.0,
+      targetAlpha: 1.0,
+      flare: 0.0,
+      sparks: sparks
+    });
   }
 
-  const cloud = [];
-  for (let s of symbols) {
-    for (let k = 0; k < 28; k++) {
-      cloud.push({
-        baseI: s.i,
-        baseQ: s.q,
-        noiseI: (Math.random() - 0.5) * 0.11,
-        noiseQ: (Math.random() - 0.5) * 0.11,
-        alpha: Math.random() * 0.7 + 0.3
+  function applyMode(key, animate = true) {
+    if (!MODES[key]) return;
+    currentModeKey = key;
+    const mode = MODES[key];
+    const targetPoints = mode.getPoints();
+
+    for (let k = 0; k < MAX_NODES; k++) {
+      if (k < targetPoints.length) {
+        nodes[k].targetI = targetPoints[k].i;
+        nodes[k].targetQ = targetPoints[k].q;
+        nodes[k].active = true;
+        nodes[k].targetAlpha = 1.0;
+        if (!animate) {
+          nodes[k].currI = targetPoints[k].i;
+          nodes[k].currQ = targetPoints[k].q;
+          nodes[k].alpha = 1.0;
+        }
+      } else {
+        const nearest = targetPoints[k % targetPoints.length];
+        nodes[k].targetI = nearest.i;
+        nodes[k].targetQ = nearest.q;
+        nodes[k].active = false;
+        nodes[k].targetAlpha = 0.0;
+        if (!animate) {
+          nodes[k].currI = nearest.i;
+          nodes[k].currQ = nearest.q;
+          nodes[k].alpha = 0.0;
+        }
+      }
+    }
+
+    if (titleEl) titleEl.textContent = mode.title;
+    if (lockBadge) lockBadge.textContent = mode.lock;
+    if (berBadge) berBadge.textContent = mode.ber;
+
+    [metricMod, metricRate, metricSnr, metricCodec].forEach(el => {
+      if (el) {
+        el.classList.add('pulse');
+        setTimeout(() => el.classList.remove('pulse'), 400);
+      }
+    });
+
+    if (metricMod) metricMod.textContent = mode.name;
+    if (metricRate) metricRate.textContent = mode.rate;
+    if (metricSnr) metricSnr.textContent = mode.snr;
+    if (metricCodec) metricCodec.textContent = mode.codec;
+
+    if (tabsContainer) {
+      tabsContainer.querySelectorAll('.scope-tab:not(.auto-toggle)').forEach(tab => {
+        tab.classList.toggle('active', tab.getAttribute('data-mode') === key);
       });
     }
   }
 
-  let angle = 0;
-  function render() {
-    ctx.fillStyle = '#0e1c10';
-    ctx.fillRect(0, 0, width, height);
+  applyMode('16qam', false);
+
+  if (tabsContainer) {
+    tabsContainer.addEventListener('click', (e) => {
+      const tab = e.target.closest('.scope-tab');
+      if (!tab) return;
+      if (tab.id === 'scope-auto-btn') {
+        isAutoCycling = !isAutoCycling;
+        tab.classList.toggle('active', isAutoCycling);
+        tab.textContent = isAutoCycling ? 'Auto ⟳' : 'Manual ⏸';
+        return;
+      }
+      const modeKey = tab.getAttribute('data-mode');
+      if (modeKey && MODES[modeKey]) {
+        applyMode(modeKey, true);
+        autoCycleTimer = 0;
+      }
+    });
+  }
+
+  let mouseHover = false;
+  let mouseX = 0;
+  let mouseY = 0;
+  let normalizedI = 0;
+  let normalizedQ = 0;
+  let clickShock = 0;
+
+  if (viewportWrap) {
+    viewportWrap.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+      mouseHover = true;
+
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = Math.min(width, height) * 0.42;
+      normalizedI = (mouseX - cx) / (radius * 0.85);
+      normalizedQ = (cy - mouseY) / (radius * 0.85);
+    });
+    viewportWrap.addEventListener('mouseleave', () => {
+      mouseHover = false;
+    });
+    viewportWrap.addEventListener('click', () => {
+      clickShock = 0.45;
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = Math.min(width, height) * 0.42;
+      const clickI = (mouseX - cx) / (radius * 0.85);
+      const clickQ = (cy - mouseY) / (radius * 0.85);
+      nodes.forEach(n => {
+        const d = Math.hypot(n.currI - clickI, n.currQ - clickQ);
+        if (d < 0.28) n.flare = 1.0;
+      });
+    });
+  }
+
+  const TRAJ_LEN = 110;
+  const trajHistory = [];
+  let interpStep = 0;
+  const SAMPLES_PER_SYM = 4;
+  let curSym = { i: 0, q: 0 };
+  let nxtSym = { i: 0, q: 0 };
+  let lissT = 0;
+
+  const OSC_LEN = 48;
+  const oscI = new Float32Array(OSC_LEN);
+  const oscQ = new Float32Array(OSC_LEN);
+
+  function pickNextSymbol() {
+    const activeNodes = nodes.filter(n => n.active);
+    if (!activeNodes.length) return { i: 0, q: 0 };
+    const idx = Math.floor(Math.random() * activeNodes.length);
+    return { i: activeNodes[idx].targetI, q: activeNodes[idx].targetQ };
+  }
+  curSym = pickNextSymbol();
+  nxtSym = pickNextSymbol();
+
+  let sweepAngle = 0;
+  let carrierPhase = 0;
+  let lastTime = performance.now();
+
+  function render(time) {
+    const dt = Math.min(0.05, (time - lastTime) / 1000);
+    lastTime = time;
+
+    if (isAutoCycling) {
+      autoCycleTimer += dt;
+      if (autoCycleTimer >= 6.5) {
+        autoCycleTimer = 0;
+        const curIdx = modeKeys.indexOf(currentModeKey);
+        const nextKey = modeKeys[(curIdx + 1) % modeKeys.length];
+        applyMode(nextKey, true);
+      }
+    }
+
+    if (clickShock > 0.001) {
+      clickShock *= 0.94;
+    } else {
+      clickShock = 0;
+    }
+
+    carrierPhase += 0.0015 + clickShock * 0.08;
+    sweepAngle = (sweepAngle + 0.026) % (Math.PI * 2);
+    lissT += 0.028;
+
+    nodes.forEach(n => {
+      n.currI += (n.targetI - n.currI) * 0.1;
+      n.currQ += (n.targetQ - n.currQ) * 0.1;
+      n.alpha += (n.targetAlpha - n.alpha) * 0.12;
+      n.flare = Math.max(0, n.flare - dt * 2.2);
+
+      if (n.active && n.alpha > 0.3) {
+        const nodeAngle = (Math.atan2(n.currQ, n.currI) + Math.PI * 2) % (Math.PI * 2);
+        const diff = Math.abs(nodeAngle - sweepAngle);
+        if (diff < 0.04 || Math.abs(diff - Math.PI * 2) < 0.04) {
+          n.flare = 0.95;
+        }
+      }
+    });
+
+    interpStep++;
+    let leadI = 0, leadQ = 0;
+
+    if (currentModeKey === 'lissajous') {
+      leadI = 0.75 * Math.sin(3 * lissT) * Math.cos(carrierPhase * 0.5) - 0.75 * Math.cos(2 * lissT) * Math.sin(carrierPhase * 0.5);
+      leadQ = 0.75 * Math.sin(3 * lissT) * Math.sin(carrierPhase * 0.5) + 0.75 * Math.cos(2 * lissT) * Math.cos(carrierPhase * 0.5);
+    } else {
+      if (interpStep >= SAMPLES_PER_SYM) {
+        interpStep = 0;
+        curSym = nxtSym;
+        nxtSym = pickNextSymbol();
+      }
+      const u = interpStep / SAMPLES_PER_SYM;
+      const ease = u * u * (3 - 2 * u);
+      const rawI = curSym.i + (nxtSym.i - curSym.i) * ease;
+      const rawQ = curSym.q + (nxtSym.q - curSym.q) * ease;
+
+      const cosC = Math.cos(carrierPhase);
+      const sinC = Math.sin(carrierPhase);
+      leadI = rawI * cosC - rawQ * sinC;
+      leadQ = rawI * sinC + rawQ * cosC;
+    }
+
+    trajHistory.push({ i: leadI, q: leadQ });
+    if (trajHistory.length > TRAJ_LEN) trajHistory.shift();
+
+    for (let k = 0; k < OSC_LEN - 1; k++) {
+      oscI[k] = oscI[k + 1];
+      oscQ[k] = oscQ[k + 1];
+    }
+    oscI[OSC_LEN - 1] = leadI;
+    oscQ[OSC_LEN - 1] = leadQ;
+
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const cx = width / 2;
     const cy = height / 2;
+    const maxDim = Math.max(width, height);
+    const bgGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, maxDim * 0.7);
+    bgGrad.addColorStop(0, '#0f2614');
+    bgGrad.addColorStop(0.65, '#08160a');
+    bgGrad.addColorStop(1, '#040b05');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
     const radius = Math.min(width, height) * 0.42;
 
-    // Draw Subtle Polar Grid in Pale Fern / Sprout
-    ctx.strokeStyle = 'rgba(183, 189, 165, 0.15)';
+    // 1. Polar Reticle & Calibrated Concentric Rings
     ctx.lineWidth = 1;
-
+    ctx.strokeStyle = 'rgba(104, 239, 63, 0.28)';
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.arc(cx, cy, radius * 0.66, 0, Math.PI * 2);
-    ctx.arc(cx, cy, radius * 0.33, 0, Math.PI * 2);
-    ctx.moveTo(cx - radius, cy);
-    ctx.lineTo(cx + radius, cy);
-    ctx.moveTo(cx, cy - radius);
-    ctx.lineTo(cx, cy + radius);
     ctx.stroke();
 
-    // Rotate constellation gently to mimic Costas carrier phase lock
-    angle += 0.002;
-    const cosA = Math.cos(angle);
-    const sinA = Math.sin(angle);
+    const rings = [
+      { r: 0.25, label: '-12 dB' },
+      { r: 0.50, label: '-6 dB' },
+      { r: 0.75, label: '-3 dB' },
+      { r: 1.00, label: '0 dBFS' }
+    ];
 
-    // Draw I/Q Symbol Cloud in Electric Sprout (#68ef3f)
-    for (let pt of cloud) {
-      const curI = pt.baseI + pt.noiseI + Math.sin(angle * 4 + pt.baseI) * 0.01;
-      const curQ = pt.baseQ + pt.noiseQ + Math.cos(angle * 4 + pt.baseQ) * 0.01;
+    ctx.strokeStyle = 'rgba(183, 189, 165, 0.12)';
+    ctx.fillStyle = 'rgba(183, 189, 165, 0.4)';
+    ctx.font = '9px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
 
-      const rotI = curI * cosA - curQ * sinA;
-      const rotQ = curI * sinA + curQ * cosA;
-
-      const px = cx + rotI * radius * 0.85;
-      const py = cy + rotQ * radius * 0.85;
-
+    rings.forEach((ring) => {
       ctx.beginPath();
-      ctx.arc(px, py, 2.4, 0, Math.PI * 2);
-      ctx.fillStyle = '#68ef3f';
-      ctx.globalAlpha = pt.alpha;
+      ctx.arc(cx, cy, radius * ring.r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      if (width > 380) {
+        ctx.fillText(ring.label, cx + 4, cy - radius * ring.r + 11);
+      }
+    });
+
+    // Reticle Crosshairs
+    ctx.strokeStyle = 'rgba(104, 239, 63, 0.22)';
+    ctx.beginPath();
+    ctx.moveTo(cx - radius * 1.04, cy);
+    ctx.lineTo(cx + radius * 1.04, cy);
+    ctx.moveTo(cx, cy - radius * 1.04);
+    ctx.lineTo(cx, cy + radius * 1.04);
+    ctx.stroke();
+
+    // Angle ticks & Cardinal markers
+    for (let deg = 0; deg < 360; deg += 15) {
+      const rad = (deg * Math.PI) / 180;
+      const isMajor = deg % 45 === 0;
+      const isCardinal = deg % 90 === 0;
+      const tickLen = isCardinal ? 8 : (isMajor ? 5 : 3);
+      const r1 = radius;
+      const r2 = radius - tickLen;
+
+      ctx.strokeStyle = isMajor ? 'rgba(104, 239, 63, 0.4)' : 'rgba(183, 189, 165, 0.18)';
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(rad) * r1, cy + Math.sin(rad) * r1);
+      ctx.lineTo(cx + Math.cos(rad) * r2, cy + Math.sin(rad) * r2);
+      ctx.stroke();
+
+      if (isCardinal && width > 420) {
+        const labelR = radius + 14;
+        const lx = cx + Math.cos(rad) * labelR;
+        const ly = cy + Math.sin(rad) * labelR;
+        ctx.fillStyle = 'rgba(183, 189, 165, 0.55)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(deg + '°', lx, ly);
+      }
+    }
+
+    // 2. Decision Boundaries & Chords
+    if (currentModeKey === '16qam') {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(104, 239, 63, 0.1)';
+      ctx.setLineDash([3, 4]);
+      const s = radius * 0.85 * (2 / 3.65);
+      [-s, s].forEach(offset => {
+        ctx.beginPath();
+        ctx.moveTo(cx + offset, cy - radius * 0.85);
+        ctx.lineTo(cx + offset, cy + radius * 0.85);
+        ctx.moveTo(cx - radius * 0.85, cy + offset);
+        ctx.lineTo(cx + radius * 0.85, cy + offset);
+        ctx.stroke();
+      });
+      ctx.restore();
+    } else if (currentModeKey === '8psk') {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(104, 239, 63, 0.12)';
+      ctx.lineWidth = 1;
+      const activeNodes = nodes.filter(n => n.active && n.alpha > 0.5);
+      if (activeNodes.length >= 8) {
+        ctx.beginPath();
+        for (let k = 0; k < 8; k++) {
+          const n1 = activeNodes[k];
+          const n2 = activeNodes[(k + 1) % 8];
+          const x1 = cx + n1.currI * radius * 0.85;
+          const y1 = cy - n1.currQ * radius * 0.85;
+          const x2 = cx + n2.currI * radius * 0.85;
+          const y2 = cy - n2.currQ * radius * 0.85;
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          const opp = activeNodes[(k + 4) % 8];
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(cx + opp.currI * radius * 0.85, cy - opp.currQ * radius * 0.85);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 3. 360° Tactical Radar Sweep Beam
+    ctx.save();
+    const sweepSteps = 16;
+    const sweepArc = Math.PI / 4;
+    for (let step = 0; step < sweepSteps; step++) {
+      const frac = step / sweepSteps;
+      const aStart = sweepAngle - sweepArc * (1 - frac);
+      const aEnd = sweepAngle - sweepArc * (1 - (step + 1) / sweepSteps);
+      const alpha = frac * frac * 0.14;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, aStart, aEnd);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(104, 239, 63, ${alpha})`;
       ctx.fill();
     }
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(sweepAngle) * radius, cy + Math.sin(sweepAngle) * radius);
+    ctx.strokeStyle = 'rgba(104, 239, 63, 0.65)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.restore();
+
+    // 4. Continuous Vector Phase Trajectory (DPO Phosphor Trace)
+    if (trajHistory.length > 2) {
+      ctx.save();
+      ctx.lineWidth = 1.6;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      for (let i = 1; i < trajHistory.length; i++) {
+        const p0 = trajHistory[i - 1];
+        const p1 = trajHistory[i];
+        const frac = i / trajHistory.length;
+        const x0 = cx + p0.i * radius * 0.85;
+        const y0 = cy - p0.q * radius * 0.85;
+        const x1 = cx + p1.i * radius * 0.85;
+        const y1 = cy - p1.q * radius * 0.85;
+
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+
+        const segAlpha = Math.pow(frac, 1.8) * 0.85;
+        ctx.strokeStyle = `rgba(104, 239, 63, ${segAlpha})`;
+        ctx.stroke();
+      }
+
+      const head = trajHistory[trajHistory.length - 1];
+      const hx = cx + head.i * radius * 0.85;
+      const hy = cy - head.q * radius * 0.85;
+
+      ctx.strokeStyle = 'rgba(104, 239, 63, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(hx, hy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = '#68ef3f';
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(hx, hy, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(104, 239, 63, 0.7)';
+      ctx.beginPath();
+      ctx.arc(hx, hy, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 5. Crisp Constellation Centroids & Focused Micro-Sparks
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+
+    nodes.forEach(node => {
+      if (!node.active && node.alpha < 0.05) return;
+
+      const nx = cx + node.currI * radius * 0.85;
+      const ny = cy - node.currQ * radius * 0.85;
+      const nAlpha = node.alpha;
+      const flare = node.flare;
+
+      // A. Focused Micro-Sparks
+      node.sparks.forEach(sp => {
+        const sx = nx + sp.offsetX * radius * 0.85;
+        const sy = ny - sp.offsetY * radius * 0.85;
+        const sAlpha = (sp.baseAlpha + flare * 0.5) * nAlpha;
+
+        ctx.fillStyle = flare > 0.3 ? '#d8ffb8' : '#68ef3f';
+        ctx.globalAlpha = Math.min(1, sAlpha);
+        ctx.beginPath();
+        ctx.arc(sx, sy, sp.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // B. Symbol Centroid Reticle
+      ctx.globalAlpha = nAlpha;
+      ctx.strokeStyle = flare > 0.2 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(104, 239, 63, 0.6)';
+      ctx.lineWidth = 1;
+
+      const crossR = 5;
+      ctx.beginPath();
+      ctx.moveTo(nx - crossR, ny);
+      ctx.lineTo(nx + crossR, ny);
+      ctx.moveTo(nx, ny - crossR);
+      ctx.lineTo(nx, ny + crossR);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(nx, ny, 3.8 + flare * 2.5, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(nx, ny, 2.0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const haloR = 9 + flare * 6;
+      const hGrad = ctx.createRadialGradient(nx, ny, 2, nx, ny, haloR);
+      hGrad.addColorStop(0, flare > 0.2 ? 'rgba(255, 255, 255, 0.6)' : 'rgba(104, 239, 63, 0.4)');
+      hGrad.addColorStop(1, 'rgba(104, 239, 63, 0)');
+      ctx.fillStyle = hGrad;
+      ctx.beginPath();
+      ctx.arc(nx, ny, haloR, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    // 6. Corner Tactical HUD Telemetry
+    ctx.save();
+    ctx.font = '10px "JetBrains Mono", monospace';
+
+    // Top-Left: System Lock Telemetry
+    ctx.fillStyle = 'rgba(104, 239, 63, 0.95)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('REC // COSTAS CARRIER LOCK', 16, 16);
+    ctx.fillStyle = 'rgba(183, 189, 165, 0.65)';
+    ctx.fillText('BW: 125 kHz | SPS: 4 | RRC α=0.35', 16, 30);
+
+    // Top-Right: Quality Metric
+    ctx.textAlign = 'right';
+    const activeMode = MODES[currentModeKey] || MODES['16qam'];
+    ctx.fillStyle = 'rgba(104, 239, 63, 0.95)';
+    ctx.fillText(`EVM: ${activeMode.evm} [OPTIMAL]`, width - 16, 16);
+    ctx.fillStyle = 'rgba(183, 189, 165, 0.65)';
+    ctx.fillText(`CFO: < 0.2 Hz | BER: < 10⁻⁵`, width - 16, 30);
+
+    // Bottom-Left: Live Mini I/Q Oscilloscope
+    const oscW = 100;
+    const oscH = 26;
+    const oscX = 16;
+    const oscY = height - 42;
+
+    ctx.fillStyle = 'rgba(6, 14, 8, 0.75)';
+    ctx.fillRect(oscX, oscY, oscW, oscH);
+    ctx.strokeStyle = 'rgba(104, 239, 63, 0.2)';
+    ctx.strokeRect(oscX, oscY, oscW, oscH);
+
+    ctx.strokeStyle = 'rgba(183, 189, 165, 0.15)';
+    ctx.beginPath();
+    ctx.moveTo(oscX, oscY + oscH / 2);
+    ctx.lineTo(oscX + oscW, oscY + oscH / 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#68ef3f';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let k = 0; k < OSC_LEN; k++) {
+      const px = oscX + (k / (OSC_LEN - 1)) * oscW;
+      const py = oscY + oscH / 2 - oscI[k] * (oscH * 0.4);
+      if (k === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(63, 239, 251, 0.7)';
+    ctx.beginPath();
+    for (let k = 0; k < OSC_LEN; k++) {
+      const px = oscX + (k / (OSC_LEN - 1)) * oscW;
+      const py = oscY + oscH / 2 - oscQ[k] * (oscH * 0.4);
+      if (k === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(183, 189, 165, 0.7)';
+    ctx.font = '8px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('I/Q DUAL WAVE', oscX, oscY - 4);
+
+    // Bottom-Right: Interactive Cursor Probe
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    if (mouseHover) {
+      const angleDeg = (Math.atan2(normalizedQ, normalizedI) * 180 / Math.PI).toFixed(1);
+      const signI = normalizedI >= 0 ? '+' : '';
+      const signQ = normalizedQ >= 0 ? '+' : '';
+      ctx.fillStyle = '#68ef3f';
+      ctx.font = '10px "JetBrains Mono", monospace';
+      ctx.fillText(`PROBE: I:${signI}${normalizedI.toFixed(2)} Q:${signQ}${normalizedQ.toFixed(2)} [${angleDeg}°]`, width - 16, height - 16);
+
+      ctx.strokeStyle = 'rgba(104, 239, 63, 0.35)';
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(mouseX, 0);
+      ctx.lineTo(mouseX, height);
+      ctx.moveTo(0, mouseY);
+      ctx.lineTo(width, mouseY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      ctx.fillStyle = 'rgba(183, 189, 165, 0.45)';
+      ctx.font = '9px "JetBrains Mono", monospace';
+      ctx.fillText('PROBE: HOVER TO TRACK // CLICK TO IMPULSE', width - 16, height - 16);
+    }
+
+    ctx.restore();
+    ctx.restore();
 
     requestAnimationFrame(render);
   }
-  render();
+
+  requestAnimationFrame(render);
 })();
 
 // Ambient Background Video Safety Autoplay
