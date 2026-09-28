@@ -2,101 +2,899 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>SIG-ID — Analyst Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIG-ID &mdash; Signal Intelligence Console</title>
 <link rel="stylesheet" href="/style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
-<div class="taskbar">
-  <div class="start bevel-out"><span class="logo"></span> SIG-ID</div>
-  <nav>
-    <a class="btn9x bevel-out" href="/">◀ Overview</a>
-  </nav>
-  <div class="clock" id="tb-clock">00:00:00</div>
+<div class="command-header-wrapper">
+<header class="command-header">
+  <div class="brand-section">
+    <!-- Navigation Modules Dropdown Trigger -->
+    <div class="nav-dropdown-wrap">
+      <button class="gcp-icon-btn" id="btn-toggle-rail" title="Navigation Modules Menu" aria-label="Toggle navigation menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+
+      <div class="nav-dropdown-menu" id="nav-dropdown">
+        <div class="nav-dropdown-section-title">Intelligence Modules</div>
+        <a class="nav-dropdown-item active" href="/dashboard.html">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          </span>
+          <span>Dashboard Overview</span>
+        </a>
+        <a class="nav-dropdown-item" href="#sec-spectrum">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.93 4.93a10 10 0 0 1 14.14 0"></path><path d="M7.76 7.76a6 6 0 0 1 8.48 0"></path><circle cx="12" cy="12" r="2"></circle><line x1="12" y1="14" x2="12" y2="20"></line></svg>
+          </span>
+          <span>RF Spectral Analysis (PSD)</span>
+        </a>
+        <a class="nav-dropdown-item" href="#sec-waveform">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          </span>
+          <span>Time-Domain Waveform (I/Q)</span>
+        </a>
+        <a class="nav-dropdown-item" href="#sec-waterfall">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+          </span>
+          <span>Time-Frequency Spectrogram</span>
+        </a>
+        <a class="nav-dropdown-item" href="#sec-constellation">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          </span>
+          <span>Demod &amp; Polar Map</span>
+        </a>
+        <a class="nav-dropdown-item" href="#sec-eye">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          </span>
+          <span>Eye &amp; Timing Scope</span>
+        </a>
+        <a class="nav-dropdown-item" href="#sec-cumulants">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </span>
+          <span>Cumulant Classifier</span>
+        </a>
+        <a class="nav-dropdown-item" href="#sec-equalizer">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          </span>
+          <span>10-Band DSP Filter</span>
+        </a>
+        <a class="nav-dropdown-item" href="#sec-hypotheses">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+          </span>
+          <span>96-Hypothesis Matrix</span>
+        </a>
+        <a class="nav-dropdown-item" href="#sec-bitstream">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          </span>
+          <span>Payload Decoder</span>
+        </a>
+        <div class="nav-dropdown-divider"></div>
+        <div class="nav-dropdown-section-title">Interactive Labs</div>
+        <a class="nav-dropdown-item" href="#" id="menu-synth-link">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+          </span>
+          <span>Signal Synthesis Lab</span>
+        </a>
+        <a class="nav-dropdown-item" href="#" id="menu-batch-link">
+          <span class="nav-item-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M7 12h10"></path><path d="M7 8h10"></path><path d="M7 16h6"></path></svg>
+          </span>
+          <span>Batch Benchmark Matrix</span>
+        </a>
+      </div>
+    </div>
+
+    <a href="/dashboard.html" class="brand-logo-badge">
+      <div class="tomorro-logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="#68ef3f" stroke-width="1.8" fill="rgba(104, 239, 63, 0.15)"/>
+          <path d="M12 7C9.5 7 7.5 9 7.5 12C7.5 14.5 9.5 17 12 17C14.5 17 16.5 14.5 16.5 12" stroke="#68ef3f" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="2" fill="#68ef3f"/>
+        </svg>
+      </div>
+      <span class="brand-title">sig<span class="brand-accent">&bull;</span>id</span>
+    </a>
+
+    <nav class="header-nav" style="margin-left: 16px;">
+      <a class="cmd-nav-link" href="/">Manifesto</a>
+      <a class="cmd-nav-link active" href="/dashboard.html">Console</a>
+    </nav>
+  </div>
+
+  <!-- Right Actions -->
+  <div class="header-right">
+    <div class="system-status-indicator">
+      <span class="status-dot-pulse"></span>
+      <span id="sys-status-text">ONLINE // SIGINT ACTIVE</span>
+    </div>
+
+    <div class="master-clock" id="tb-clock">00:00:00 UTC</div>
+
+    <!-- Hidden alias buttons to maintain full JS compatibility -->
+    <button id="btn-open-synth" style="display:none;"></button>
+    <button id="btn-open-batch" style="display:none;"></button>
+    <button id="btn-open-dossier" style="display:none;"></button>
+
+    <div class="export-dropdown-wrap">
+      <button class="header-action-btn" id="btn-export-menu">
+        EXPORT
+      </button>
+      <div class="export-menu" id="export-dropdown">
+        <a href="#" id="exp-iq">Export Raw I/Q (.iq)</a>
+        <a href="#" id="exp-wav">Export Stereo Audio (.wav)</a>
+        <a href="#" id="exp-json">Export Analysis State (.json)</a>
+        <a href="#" id="exp-csv">Export Candidate Table (.csv)</a>
+        <a href="#" id="exp-dossier" target="_blank">Mission Intel Dossier (.html)</a>
+      </div>
+    </div>
+  </div>
+</header>
 </div>
 
-<div class="dash-wrap">
+<!-- Main Layout Wrapper -->
+<div class="gcp-app-wrapper">
 
-  <div class="win control-win">
-    <div class="winbar">
-      <span class="dots"><span></span><span></span><span></span></span>
-      <span class="title">SIG-ID.EXE — Control Panel</span>
-      <span class="winctl bevel-out">_</span><span class="winctl bevel-out">□</span><span class="winctl bevel-out">x</span>
-    </div>
-    <div class="winbody">
-      <div class="field">
-        <input id="file-input" type="file" accept=".iq,.wav">
-        <button id="upload-btn">📂 Load .iq / .wav</button>
+  <!-- GCP Main Content Area -->
+  <div class="gcp-main-content">
+    
+    <!-- GCP Subheader Breadcrumbs & Global Actions Toolbar -->
+    <div class="gcp-page-subheader">
+      <div class="gcp-breadcrumbs-group">
+        <div class="gcp-breadcrumbs">
+          <a href="/">SIG-ID</a>
+          <span class="sep">&gt;</span>
+          <a href="/dashboard.html">Tactical Cyberdeck</a>
+          <span class="sep">&gt;</span>
+          <span>Demodulation &amp; Analysis Console</span>
+        </div>
+        <div class="gcp-page-title-row">
+          <h1 class="gcp-page-title">Signal Intelligence Command Center</h1>
+        </div>
       </div>
-      <div class="field">
-        <select id="sample-select"><option value="">-- or pick a sample --</option></select>
-      </div>
-      <div class="field"><div class="lcd status-lcd" id="params-label">BW: -- | SNR: -- | RATE: --</div></div>
-      <div class="field" style="margin-left:auto"><div class="lcd status-lcd" id="status-label">NO FILE LOADED</div></div>
 
-      <div class="field" style="width:100%; border-top:1px solid var(--face-dark); padding-top:10px; margin-top:2px;">
-        <label>ENGINE:</label>
-        <label class="radio-label"><input type="radio" name="engine-mode" value="exhaustive" checked> Exhaustive (96)</label>
-        <label class="radio-label"><input type="radio" name="engine-mode" value="adaptive"> Adaptive (pruned)</label>
-        <span style="width:12px; display:inline-block"></span>
-        <label>MOD:</label>
-        <select id="mod-select">
-          <option value="auto" selected>auto-detect (all 6)</option>
-          <option value="bpsk">bpsk</option>
-          <option value="qpsk">qpsk</option>
-          <option value="8psk">8psk</option>
-          <option value="16qam">16qam</option>
-          <option value="2fsk">2fsk</option>
-          <option value="4fsk">4fsk</option>
-        </select>
-        <label>SPS:</label>
-        <input id="sps-input" type="number" value="4" min="1" max="64" style="width:60px">
-        <label>PAYLOAD BITS:</label>
-        <input id="payload-input" type="number" value="256" min="8" max="1000000" style="width:90px">
-        <button id="search-btn" class="accent" disabled>▶ RUN HYPOTHESIS SEARCH</button>
+      <div class="gcp-toolbar-actions">
+        <button class="header-action-btn primary" id="upload-btn" title="Load custom .iq or .wav recording">
+          LOAD FILE
+        </button>
       </div>
     </div>
+
+    <main class="command-container">
+
+      <!-- ============================================================
+           1. TELEMETRY HUD STRIP (GCP Cloud Monitoring KPI Cards)
+           ============================================================ -->
+      <section class="telemetry-hud-strip">
+
+        <!-- SNR Card -->
+        <div class="hud-kpi-card">
+          <div class="hud-kpi-header">
+            <span class="hud-kpi-label">Estimated SNR</span>
+            <span class="hud-kpi-unit">dB</span>
+          </div>
+          <div class="hud-kpi-val cyan" id="lcd-snr">-- dB</div>
+          <div class="hud-kpi-footer">
+            <span>NOISE FLOOR: -20 dB</span>
+            <span id="badge-rate">200K FS</span>
+          </div>
+        </div>
+
+        <!-- Bandwidth Card -->
+        <div class="hud-kpi-card">
+          <div class="hud-kpi-header">
+            <span class="hud-kpi-label">Channel Bandwidth</span>
+            <span class="hud-kpi-unit">kHz</span>
+          </div>
+          <div class="hud-kpi-val" id="lcd-bw">-- kHz</div>
+          <div class="hud-kpi-footer">
+            <span>OCCUPIED PSD</span>
+            <span id="badge-iq">IQ RAW</span>
+          </div>
+        </div>
+
+        <!-- Symbol Rate Card -->
+        <div class="hud-kpi-card">
+          <div class="hud-kpi-header">
+            <span class="hud-kpi-label">Symbol Rate (Clock)</span>
+            <span class="hud-kpi-unit">kSym/s</span>
+          </div>
+          <div class="hud-kpi-val" id="lcd-symrate">-- kSym/s</div>
+          <div class="hud-kpi-footer">
+            <span>OERDER &amp; MEYR</span>
+            <span>SPS: <span id="hud-sps-tag">4</span></span>
+          </div>
+        </div>
+
+        <!-- Carrier CFO Card -->
+        <div class="hud-kpi-card amber">
+          <div class="hud-kpi-header">
+            <span class="hud-kpi-label">Carrier CFO Offset</span>
+            <span class="hud-kpi-unit">Hz</span>
+          </div>
+          <div class="hud-kpi-val amber" id="lcd-cfo">0.0 Hz</div>
+          <div class="hud-kpi-footer">
+            <span>COARSE ESTIMATE</span>
+            <button id="btn-zero-cfo" class="hud-mini-btn" title="Compensate carrier offset">ZERO CFO</button>
+          </div>
+        </div>
+
+        <!-- Top Classification Card -->
+        <div class="hud-kpi-card purple">
+          <div class="hud-kpi-header">
+            <span class="hud-kpi-label">Modulation Inference</span>
+            <span class="hud-kpi-unit">ML SCORE</span>
+          </div>
+          <div class="hud-kpi-val" id="hud-top-mod">UNKNOWN</div>
+          <div class="hud-kpi-footer">
+            <span>CUMULANT MATCH</span>
+            <span id="hud-top-score">--</span>
+          </div>
+        </div>
+
+        <!-- Exploitation Status Card -->
+        <div class="hud-kpi-card emerald">
+          <div class="hud-kpi-header">
+            <span class="hud-kpi-label">Exploitation Verdict</span>
+            <span class="hud-kpi-unit" id="badge-crc">CRC-16</span>
+          </div>
+          <div class="hud-kpi-val emerald" id="lcd-status-text">READY</div>
+          <div class="hud-kpi-footer">
+            <span id="badge-engine">ADAPTIVE (PRUNED)</span>
+            <span id="badge-verified">UNVERIFIED</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================================
+           2. GCP OPERATIONS CONTROL BAR
+           ============================================================ -->
+      <section class="control-operations-bar">
+        
+        <!-- Input Source Section -->
+        <div class="ops-group">
+          <span class="ops-group-label">Capture:</span>
+          <select id="sample-select" class="tactical-select" title="Select standard benchmark recording">
+            <option value="">-- Select Benchmark Capture --</option>
+          </select>
+          <input id="file-input" type="file" accept=".iq,.wav" style="display:none;">
+        </div>
+
+        <!-- Search Engine Configuration -->
+        <div class="ops-group">
+          <span class="ops-group-label">Engine:</span>
+          <div class="tactical-radio-group">
+            <label class="tactical-radio-label active" id="label-engine-adapt">
+              <input type="radio" name="engine-mode" value="adaptive" checked> Adaptive (Pruned)
+            </label>
+            <label class="tactical-radio-label" id="label-engine-exh">
+              <input type="radio" name="engine-mode" value="exhaustive"> Exhaustive (96)
+            </label>
+          </div>
+
+          <span class="ops-group-label">Modulation:</span>
+          <select id="mod-select" class="tactical-select">
+            <option value="auto" selected>Auto-Detect (Catalog 6)</option>
+            <option value="bpsk">BPSK</option>
+            <option value="qpsk">QPSK</option>
+            <option value="8psk">8-PSK</option>
+            <option value="16qam">16-QAM</option>
+            <option value="2fsk">2-FSK</option>
+            <option value="4fsk">4-FSK</option>
+          </select>
+
+          <span class="ops-group-label">SPS:</span>
+          <input id="sps-input" type="number" class="tactical-input" value="4" min="1" max="64" style="width:55px;">
+
+          <span class="ops-group-label">Bits:</span>
+          <input id="payload-input" type="number" class="tactical-input" value="256" min="8" max="1000000" style="width:75px;">
+        </div>
+
+        <!-- Audio Demod Monitor Deck -->
+        <div class="audio-demod-bar">
+          <button class="audio-ctrl-btn" id="btn-prev" title="Rewind &amp; Replay Audio"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"></line></svg></button>
+          <button class="audio-ctrl-btn" id="btn-play" title="Play Demodulated Audio"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>
+          <button class="audio-ctrl-btn" id="btn-pause" title="Pause Audio"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></button>
+          <button class="audio-ctrl-btn" id="btn-stop" title="Stop Audio"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14"></rect></svg></button>
+          <button class="audio-ctrl-btn" id="btn-next" title="Run Fast Adaptive Intercept"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"></line></svg></button>
+
+          <select id="audio-demod-mode" class="tactical-select" style="padding:4px 8px; font-size:11px;">
+            <option value="am">AM Envelope</option>
+            <option value="fm">FM Discriminator</option>
+            <option value="ssb">SSB / Carrier</option>
+          </select>
+
+          <div class="audio-slider-wrap">
+            <span>VOL:</span>
+            <input type="range" id="vol-slider" class="tactical-range-slider" min="0" max="100" value="80">
+            <span id="vol-val">80%</span>
+          </div>
+
+          <div class="audio-slider-wrap">
+            <span>FLT:</span>
+            <input type="range" id="audio-filter-slider" class="tactical-range-slider" min="500" max="10000" step="100" value="4000">
+            <span id="audio-filter-val">4.0 kHz</span>
+          </div>
+        </div>
+
+        <!-- Primary Search Execution -->
+        <button id="search-btn" class="execute-search-btn" disabled>
+          EXECUTE SEARCH
+        </button>
+
+      </section>
+
+      <!-- ============================================================
+           3. GCP DATA SCOPES GRID
+           ============================================================ -->
+      <section class="tactical-grid-layout">
+
+        <!-- 1. Spectrum FFT PSD Scope -->
+        <div class="tactical-card" id="sec-spectrum">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot"></span>
+              <span class="card-title">Power Spectral Density (PSD) &mdash; Spectrum.FFT</span>
+            </div>
+          </div>
+          <div class="tactical-card-body">
+            <div class="chart-viewport">
+              <canvas id="fft-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Time-Domain Waveform Scope -->
+        <div class="tactical-card" id="sec-waveform">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot" style="background:var(--google-yellow);"></span>
+              <span class="card-title">Time-Domain Waveform &mdash; In-Phase (I) &amp; Quadrature (Q)</span>
+            </div>
+          </div>
+          <div class="tactical-card-body">
+            <div class="chart-viewport">
+              <canvas id="waveform-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Waterfall Heatmap Spectrogram -->
+        <div class="tactical-card" id="sec-waterfall">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot" style="background:#af5cf7;"></span>
+              <span class="card-title">Time-Frequency Spectrogram &mdash; Waterfall Heatmap</span>
+            </div>
+            <div class="card-controls-group">
+              <select id="spec-colormap-select" class="tactical-select" style="padding:2px 8px; font-size:11px;">
+                <option value="cyber">Palette: Cloud Cyan</option>
+                <option value="turbo">Palette: Turbo / Jet</option>
+                <option value="viridis">Palette: Viridis</option>
+                <option value="inferno">Palette: Inferno</option>
+                <option value="matrix">Palette: Matrix Green</option>
+                <option value="mono">Palette: Monochrome</option>
+              </select>
+            </div>
+          </div>
+          <div class="tactical-card-body">
+            <div class="chart-viewport">
+              <canvas id="spec-canvas" height="230"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Constellation Polar Symbol Map -->
+        <div class="tactical-card" id="sec-constellation">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot" style="background:var(--google-green);"></span>
+              <span class="card-title">Constellation Diagram &mdash; Polar Symbol Decimation</span>
+            </div>
+            <div class="card-controls-group">
+              <button id="btn-zoom-const" class="scope-pill-btn">ZOOM</button>
+            </div>
+          </div>
+          <div class="tactical-card-body">
+            <div class="chart-viewport">
+              <canvas id="constellation-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Eye Diagram & Timing Jitter Scope -->
+        <div class="tactical-card" id="sec-eye">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot" style="background:var(--google-blue-bright);"></span>
+              <span class="card-title">Eye Diagram Scope &mdash; Symbol Transitions &amp; ISI</span>
+            </div>
+            <div class="card-controls-group">
+              <button id="btn-eye-toggle" class="scope-pill-btn">CHANNEL: I+Q</button>
+            </div>
+          </div>
+          <div class="tactical-card-body">
+            <div class="chart-viewport">
+              <canvas id="eye-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Cumulants Fingerprint & Modulation Likelihoods -->
+        <div class="tactical-card" id="sec-cumulants">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot" style="background:var(--google-yellow);"></span>
+              <span class="card-title">Higher-Order Cumulants &amp; ML Classification</span>
+            </div>
+          </div>
+          <div class="tactical-card-body">
+            <div class="cumulants-metrics-row">
+              <div class="cumulant-chip">
+                <div class="cumulant-chip-label">C20 (2nd Cumulant)</div>
+                <div class="cumulant-chip-val" id="val-c20">0.00000</div>
+              </div>
+              <div class="cumulant-chip">
+                <div class="cumulant-chip-label">C40 (4th Zero-Lag)</div>
+                <div class="cumulant-chip-val" id="val-c40">0.00000</div>
+              </div>
+              <div class="cumulant-chip">
+                <div class="cumulant-chip-label">C42 (4th Mod-Lag)</div>
+                <div class="cumulant-chip-val" id="val-c42">0.00000</div>
+              </div>
+              <div class="cumulant-chip">
+                <div class="cumulant-chip-label">Envelope Var</div>
+                <div class="cumulant-chip-val" id="val-envvar">0.00000</div>
+              </div>
+              <div class="cumulant-chip">
+                <div class="cumulant-chip-label">Spectral Kurtosis</div>
+                <div class="cumulant-chip-val" id="val-kurtosis">0.00000</div>
+              </div>
+              <div class="cumulant-chip">
+                <div class="cumulant-chip-label">Carrier CFO</div>
+                <div class="cumulant-chip-val" id="val-cfo-est">0.0 Hz</div>
+              </div>
+            </div>
+
+            <div class="mod-likelihood-bars" id="mod-rankings-bars">
+              <div class="ranking-item">
+                <span class="mod-tag">QPSK</span>
+                <div class="bar-track"><div class="bar-fill" style="width: 85%;"></div></div>
+                <span class="bar-score">0.850</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. 10-Band Graphic Equalizer & Digital DSP Filtering -->
+        <div class="tactical-card full-width" id="sec-equalizer">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot"></span>
+              <span class="card-title">10-Band Parametric Equalizer &amp; Digital DSP Filtering</span>
+            </div>
+            <div class="card-controls-group">
+              <select id="filter-type-select" class="tactical-select" style="padding:2px 8px; font-size:11px;">
+                <option value="equalizer">Mode: 10-Band Equalizer</option>
+                <option value="lowpass">Mode: Lowpass 20 kHz</option>
+                <option value="highpass">Mode: Highpass 5 kHz</option>
+                <option value="bandpass">Mode: Bandpass 10-40 kHz</option>
+              </select>
+            </div>
+          </div>
+          <div class="tactical-card-body">
+            <div class="eq-tactical-deck">
+              
+              <!-- 10 Faders -->
+              <div class="eq-faders-container">
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="0">
+                  <span class="eq-frequency-label">70Hz</span>
+                </div>
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="1">
+                  <span class="eq-frequency-label">180Hz</span>
+                </div>
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="2">
+                  <span class="eq-frequency-label">320Hz</span>
+                </div>
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="3">
+                  <span class="eq-frequency-label">600Hz</span>
+                </div>
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="4">
+                  <span class="eq-frequency-label">1kHz</span>
+                </div>
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="5">
+                  <span class="eq-frequency-label">3kHz</span>
+                </div>
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="6">
+                  <span class="eq-frequency-label">6kHz</span>
+                </div>
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="7">
+                  <span class="eq-frequency-label">12kHz</span>
+                </div>
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="8">
+                  <span class="eq-frequency-label">14kHz</span>
+                </div>
+                <div class="eq-fader-column">
+                  <input type="range" class="eq-vertical-slider eq-vert-slider" min="-12" max="12" value="0" data-idx="9">
+                  <span class="eq-frequency-label">16kHz</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="eq-actions-column">
+                <button id="btn-apply-eq" class="eq-action-btn apply">APPLY FILTER</button>
+                <button id="btn-reset-eq" class="eq-action-btn reset">RESET RAW IQ</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Candidate Hypotheses Evidence Table -->
+        <div class="tactical-card full-width" id="sec-hypotheses">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot"></span>
+              <span class="card-title">Hypothesis Verification Matrix (96 Combinations Catalog)</span>
+            </div>
+            <div class="card-controls-group">
+              <input type="text" id="filter-candidates" class="tactical-input" placeholder="Filter mod/fec/intl..." style="padding:4px 10px; font-size:12px;">
+            </div>
+          </div>
+          <div class="tactical-card-body" style="padding:0;">
+            <div class="tactical-table-wrap">
+              <table class="tactical-data-table" id="playlist-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>MODULATION</th>
+                    <th>FEC SCHEME</th>
+                    <th>INTERLEAVER</th>
+                    <th>CRC-16</th>
+                    <th>SYNC CORRELATION</th>
+                    <th>RE-ENCODE BER</th>
+                    <th>SCORE</th>
+                    <th>VERDICT</th>
+                  </tr>
+                </thead>
+                <tbody id="playlist-table-body">
+                  <tr>
+                    <td colspan="9" style="text-align:center; padding: 28px; color: var(--text-dim);">
+                      Select an RF recording and click [EXECUTE SEARCH] to evaluate candidate hypotheses.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. Bitstream & Payload Reconnaissance Deck -->
+        <div class="tactical-card full-width" id="sec-bitstream">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot" style="background:var(--google-green);"></span>
+              <span class="card-title">Payload Extraction &amp; Bitstream Decoder</span>
+            </div>
+            <div class="bitstream-tabs-bar">
+              <button class="bitstream-tab-btn active" id="tab-btn-hex">HEX &amp; ASCII DUMP</button>
+              <button class="bitstream-tab-btn" id="tab-btn-diff">GROUND TRUTH BER DIFF</button>
+              <button class="bitstream-tab-btn" id="tab-btn-bits">RAW BITSTREAM</button>
+              <button class="bitstream-tab-btn" id="tab-btn-evidence">EVIDENCE LOG</button>
+              <button id="btn-copy-bits" class="scope-pill-btn" style="margin-left:8px;">COPY</button>
+            </div>
+          </div>
+          <div class="tactical-card-body">
+            
+            <!-- View 1: Hex & ASCII Dump -->
+            <div id="view-hex" class="bitstream-view-panel active">
+              <div class="hex-dump-terminal" id="hex-dump-box">Awaiting hypothesis verification to extract and decode payload bitstream...</div>
+            </div>
+
+            <!-- View 2: Ground Truth BER Diff -->
+            <div id="view-diff" class="bitstream-view-panel">
+              <div class="ber-diff-terminal">
+                <div class="diff-metric-strip" id="diff-summary-strip">BER: -- &bull; BIT ERRORS: -- &bull; CRC: --</div>
+                <div class="diff-chips-cloud" id="bit-diff-grid">Load a benchmark sample with ground truth to view bit-by-bit accuracy diff.</div>
+              </div>
+            </div>
+
+            <!-- View 3: Raw Bits -->
+            <div id="view-bits" class="bitstream-view-panel">
+              <div class="hex-dump-terminal" id="raw-bits-box">Run hypothesis search to recover payload bits.</div>
+            </div>
+
+            <!-- View 4: Evidence Log -->
+            <div id="view-evidence" class="bitstream-view-panel">
+              <div class="hex-dump-terminal" id="evidence-box">Scored hypotheses details will be recorded here.</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 10. Adaptive Search Telemetry Deck (Conditional) -->
+        <div class="tactical-card full-width" id="telemetry-win" style="display:none;">
+          <div class="tactical-card-header">
+            <div class="card-title-group">
+              <span class="card-indicator-dot" style="background:var(--google-yellow);"></span>
+              <span class="card-title">Adaptive Search Pruning Telemetry &amp; Speedup Metrics</span>
+            </div>
+          </div>
+          <div class="tactical-card-body">
+            <div class="hex-dump-terminal" id="telemetry-box">Adaptive search telemetry details.</div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
   </div>
 
-  <div class="grid">
-    <div class="win">
-      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">WAVEFORM.SCOPE</span><span class="winctl bevel-out">x</span></div>
-      <div class="winbody dark"><div class="chart-wrap"><canvas id="waveform-chart"></canvas></div></div>
+</div>
+
+<!-- ============================================================
+     MODAL 1: SIGNAL SYNTHESIS & IMPAIRMENT STUDIO (GCP Dialog)
+     ============================================================ -->
+<div class="tactical-modal-backdrop" id="synth-modal" style="display:none;">
+  <div class="tactical-modal-card">
+    <div class="modal-header">
+      <span class="modal-title">Signal Synthesis Lab &mdash; RF Channel &amp; Impairment Generator</span>
+      <button class="modal-close-btn" id="btn-close-synth">&times;</button>
     </div>
-    <div class="win">
-      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">SPECTRUM.FFT</span><span class="winctl bevel-out">x</span></div>
-      <div class="winbody dark"><div class="chart-wrap"><canvas id="fft-chart"></canvas></div></div>
-    </div>
-    <div class="win">
-      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">WATERFALL.SPEC</span><span class="winctl bevel-out">x</span></div>
-      <div class="winbody dark"><div class="chart-wrap"><canvas id="spec-canvas" height="210"></canvas></div></div>
-    </div>
-    <div class="win">
-      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">CONSTELLATION.IQ</span><span class="winctl bevel-out">x</span></div>
-      <div class="winbody dark"><div class="chart-wrap"><canvas id="constellation-chart"></canvas></div></div>
-    </div>
-    <div class="win">
-      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">EVIDENCE.LOG</span><span class="winctl bevel-out">x</span></div>
-      <div class="winbody dark"><div class="lcd" id="evidence-box">Load a signal, then Run Hypothesis Search to score all 96 modulation x FEC x interleaver combos.</div></div>
-    </div>
-    <div class="win">
-      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">BITSTREAM.LOG</span><span class="winctl bevel-out">x</span></div>
-      <div class="winbody dark"><div class="lcd" id="bitstream-box">run a search to populate</div></div>
-    </div>
-    <div class="win" id="telemetry-win" style="display:none">
-      <div class="winbar"><span class="dots"><span></span><span></span><span></span></span><span class="title">ADAPTIVE.TELEMETRY</span><span class="winctl bevel-out">x</span></div>
-      <div class="winbody dark"><div class="lcd" id="telemetry-box">select Adaptive mode and run a search</div></div>
+
+    <div class="modal-body">
+      
+      <!-- Presets -->
+      <div class="preset-pills-row">
+        <span class="ops-group-label">PRESETS:</span>
+        <button class="preset-pill synth-preset-btn" data-mod="qpsk" data-fec="viterbi" data-intl="block" data-snr="25" data-cfo="0" data-delay="0" data-att="0">Clean QPSK (AWGN)</button>
+        <button class="preset-pill synth-preset-btn" data-mod="8psk" data-fec="reed_solomon" data-intl="diagonal" data-snr="18" data-cfo="120" data-delay="0" data-att="0">8-PSK + 120Hz CFO</button>
+        <button class="preset-pill synth-preset-btn" data-mod="16qam" data-fec="ldpc" data-intl="pseudo_random" data-snr="15" data-cfo="50" data-delay="4" data-att="0.4">16-QAM Faded Multipath</button>
+        <button class="preset-pill synth-preset-btn" data-mod="2fsk" data-fec="concatenated" data-intl="convolutional" data-snr="20" data-cfo="80" data-delay="0" data-att="0">2-FSK Continuous Phase</button>
+      </div>
+
+      <div class="modal-form-grid">
+        <div class="modal-form-group">
+          <label class="form-label" for="synth-mod">Modulation Scheme</label>
+          <select id="synth-mod" class="tactical-select">
+            <option value="bpsk">BPSK</option>
+            <option value="qpsk" selected>QPSK</option>
+            <option value="8psk">8-PSK</option>
+            <option value="16qam">16-QAM</option>
+            <option value="2fsk">2-FSK</option>
+            <option value="4fsk">4-FSK</option>
+          </select>
+        </div>
+
+        <div class="modal-form-group">
+          <label class="form-label" for="synth-fec">Forward Error Correction (FEC)</label>
+          <select id="synth-fec" class="tactical-select">
+            <option value="viterbi" selected>Viterbi (Rate 1/2, K=7)</option>
+            <option value="reed_solomon">Reed-Solomon RS(255, 223)</option>
+            <option value="concatenated">Concatenated (RS + Conv)</option>
+            <option value="ldpc">LDPC (Belief Propagation)</option>
+          </select>
+        </div>
+
+        <div class="modal-form-group">
+          <label class="form-label" for="synth-intl">Interleaver Scheme</label>
+          <select id="synth-intl" class="tactical-select">
+            <option value="block" selected>Block Interleaver</option>
+            <option value="convolutional">Convolutional Interleaver</option>
+            <option value="diagonal">Diagonal Interleaver</option>
+            <option value="pseudo_random">Pseudo-Random Interleaver</option>
+          </select>
+        </div>
+
+        <div class="modal-form-group">
+          <label class="form-label" for="synth-sps">Samples Per Symbol (SPS)</label>
+          <select id="synth-sps" class="tactical-select">
+            <option value="2">2 SPS</option>
+            <option value="4" selected>4 SPS</option>
+            <option value="8">8 SPS</option>
+            <option value="16">16 SPS</option>
+          </select>
+        </div>
+
+        <div class="modal-form-group">
+          <label class="form-label">SNR (dB): <span id="synth-snr-val" class="form-highlight-val">20 dB</span></label>
+          <input type="range" id="synth-snr" class="tactical-range-slider" min="-5" max="40" step="1" value="20" style="width:100%;">
+        </div>
+
+        <div class="modal-form-group">
+          <label class="form-label">Carrier Frequency Offset (Hz): <span id="synth-cfo-val" class="form-highlight-val">0 Hz</span></label>
+          <input type="range" id="synth-cfo" class="tactical-range-slider" min="-2000" max="2000" step="10" value="0" style="width:100%;">
+        </div>
+
+        <div class="modal-form-group">
+          <label class="form-label">Multipath Delay (Samples): <span id="synth-mp-delay-val" class="form-highlight-val">0</span></label>
+          <input type="range" id="synth-mp-delay" class="tactical-range-slider" min="0" max="20" step="1" value="0" style="width:100%;">
+        </div>
+
+        <div class="modal-form-group">
+          <label class="form-label">Multipath Attenuation (0–1): <span id="synth-mp-att-val" class="form-highlight-val">0.00</span></label>
+          <input type="range" id="synth-mp-att" class="tactical-range-slider" min="0" max="1" step="0.05" value="0.0" style="width:100%;">
+        </div>
+
+        <div class="modal-form-group" style="grid-column: 1 / -1;">
+          <label class="form-label" for="synth-custom-text">Embed Secret ASCII Payload Text:</label>
+          <input type="text" id="synth-custom-text" class="tactical-input" value="NTRO CLASSIFIED TRANSMISSION: SIGID-VERTEX-2026" style="width:100%;">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-cancel-synth" class="header-action-btn">CANCEL</button>
+        <button id="btn-do-synth" class="execute-search-btn">INJECT INTO CONSOLE</button>
+      </div>
+
     </div>
   </div>
+</div>
 
+<!-- ============================================================
+     MODAL 2: BATCH BENCHMARK SUITE MATRIX (GCP Dialog)
+     ============================================================ -->
+<div class="tactical-modal-backdrop" id="batch-modal" style="display:none;">
+  <div class="tactical-modal-card" style="max-width:960px;">
+    <div class="modal-header">
+      <span class="modal-title">Batch Benchmark Suite &mdash; Dataset Exploitation Matrix</span>
+      <button class="modal-close-btn" id="btn-close-batch">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div class="tactical-radio-group">
+          <label class="tactical-radio-label active">
+            <input type="radio" name="batch-engine" value="adaptive" checked> Adaptive Engine
+          </label>
+          <label class="tactical-radio-label">
+            <input type="radio" name="batch-engine" value="exhaustive"> Exhaustive (96)
+          </label>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button id="btn-run-batch-matrix" class="execute-search-btn">RUN ALL BENCHMARKS</button>
+          <button id="btn-export-batch-csv" class="header-action-btn" disabled>EXPORT CSV</button>
+        </div>
+      </div>
+
+      <div class="batch-summary-cards" id="batch-stats-summary" style="display:none;">
+        <div class="batch-card"><div class="batch-num" id="stat-total-signals">0</div><div class="batch-label">Signals Evaluated</div></div>
+        <div class="batch-card"><div class="batch-num" id="stat-pass-rate">100%</div><div class="batch-label">Ground Truth Match</div></div>
+        <div class="batch-card"><div class="batch-num" id="stat-avg-reduction">0%</div><div class="batch-label">Search Space Pruning</div></div>
+        <div class="batch-card"><div class="batch-num" id="stat-avg-speedup">1.0x</div><div class="batch-label">Mean Speedup Factor</div></div>
+      </div>
+
+      <div class="tactical-table-wrap" style="max-height: 350px;">
+        <table class="tactical-data-table">
+          <thead>
+            <tr>
+              <th>SAMPLE</th>
+              <th>STATUS</th>
+              <th>CONFIDENCE</th>
+              <th>WINNER MOD</th>
+              <th>FEC SCHEME</th>
+              <th>INTERLEAVER</th>
+              <th>SCORE</th>
+              <th>DECODES</th>
+              <th>REDUCTION %</th>
+            </tr>
+          </thead>
+          <tbody id="batch-results-tbody">
+            <tr>
+              <td colspan="9" style="text-align:center; padding: 24px; color: var(--text-dim);">
+                Click [RUN ALL BENCHMARKS] to evaluate all signal captures in <code>/data</code>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <script src="/app.js"></script>
 <script>
+// Navigation Modules Dropdown Controller
+const navDropdown = document.getElementById('nav-dropdown');
+const navToggleBtn = document.getElementById('btn-toggle-rail');
+const navModulesLink = document.getElementById('btn-nav-modules-link');
+const exportDropdown = document.getElementById('export-dropdown');
+const exportBtn = document.getElementById('btn-export-menu');
+
+function toggleNavDropdown(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  if (exportDropdown) exportDropdown.classList.remove('show');
+  if (navDropdown) navDropdown.classList.toggle('show');
+}
+
+if (navToggleBtn) navToggleBtn.addEventListener('click', toggleNavDropdown);
+if (navModulesLink) navModulesLink.addEventListener('click', toggleNavDropdown);
+
+if (exportBtn && exportDropdown) {
+  exportBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (navDropdown) navDropdown.classList.remove('show');
+    exportDropdown.classList.toggle('show');
+  });
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', (e) => {
+  if (navDropdown && !navDropdown.contains(e.target) && e.target !== navToggleBtn && (!navToggleBtn || !navToggleBtn.contains(e.target)) && e.target !== navModulesLink) {
+    navDropdown.classList.remove('show');
+  }
+  if (exportDropdown && !exportDropdown.contains(e.target) && e.target !== exportBtn) {
+    exportDropdown.classList.remove('show');
+  }
+});
+
+// Close dropdowns on ESC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (navDropdown) navDropdown.classList.remove('show');
+    if (exportDropdown) exportDropdown.classList.remove('show');
+  }
+});
+
+// Modal shortcuts from dropdown menu
+const menuSynth = document.getElementById('menu-synth-link');
+if (menuSynth) {
+  menuSynth.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (navDropdown) navDropdown.classList.remove('show');
+    const modal = document.getElementById('synth-modal');
+    if (modal) modal.style.display = 'flex';
+  });
+}
+
+const menuBatch = document.getElementById('menu-batch-link');
+if (menuBatch) {
+  menuBatch.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (navDropdown) navDropdown.classList.remove('show');
+    const modal = document.getElementById('batch-modal');
+    if (modal) modal.style.display = 'flex';
+  });
+}
+
+// Close nav dropdown when clicking any anchor link
+if (navDropdown) {
+  navDropdown.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      navDropdown.classList.remove('show');
+    });
+  });
+}
+
 function tbtick() {
   const el = document.getElementById('tb-clock');
-  if (el) el.textContent = new Date().toLocaleTimeString('en-GB');
+  if (el) el.textContent = new Date().toUTCString().replace(/.*?, /, '').replace(/ GMT/, ' UTC');
 }
 tbtick();
 setInterval(tbtick, 1000);

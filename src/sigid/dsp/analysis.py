@@ -102,3 +102,72 @@ def extract_constellation(iq: np.ndarray, fs: float, symbol_rate: float, max_sym
     if len(symbols) > max_symbols:
         symbols = symbols[:max_symbols]
     return symbols
+
+
+def extract_eye_diagram(iq: np.ndarray, sps: int, trace_symbols: int = 2, max_traces: int = 40) -> dict:
+    """Extract overlaid eye diagram traces for I and Q channels across symbol periods."""
+    if sps < 2 or len(iq) < sps * trace_symbols:
+        return {"traces_i": [], "traces_q": [], "t": []}
+    trace_len = int(sps * trace_symbols)
+    available_traces = (len(iq) - sps) // trace_len
+    if available_traces <= 0:
+        return {"traces_i": [], "traces_q": [], "t": []}
+    n_traces = min(max_traces, available_traces)
+    t = np.linspace(0, trace_symbols, trace_len).tolist()
+    traces_i = []
+    traces_q = []
+    step = max(1, (len(iq) - trace_len) // n_traces)
+    for idx in range(0, len(iq) - trace_len, step):
+        chunk = iq[idx : idx + trace_len]
+        traces_i.append(chunk.real.tolist())
+        traces_q.append(chunk.imag.tolist())
+        if len(traces_i) >= n_traces:
+            break
+    return {"traces_i": traces_i, "traces_q": traces_q, "t": t}
+
+
+def apply_dsp_filter(
+    iq: np.ndarray,
+    fs: float,
+    filter_type: str = "bypass",
+    cutoff_hz: float = 20000.0,
+    cutoff_high_hz: float = 60000.0,
+    order: int = 4,
+    eq_gains: list[float] | None = None,
+) -> np.ndarray:
+    """Apply DSP digital filtering (Lowpass, Highpass, Bandpass) or 10-band Equalization to IQ stream."""
+    if filter_type == "bypass" or len(iq) < 32:
+        return iq
+
+    nyq = 0.5 * fs
+    if filter_type == "lowpass":
+        cutoff = min(max(cutoff_hz, 100.0), nyq * 0.95)
+        sos = signal.butter(order, cutoff / nyq, btype="lowpass", output="sos")
+        real_filt = signal.sosfilt(sos, iq.real)
+        imag_filt = signal.sosfilt(sos, iq.imag)
+        return real_filt + 1j * imag_filt
+    elif filter_type == "highpass":
+        cutoff = min(max(cutoff_hz, 100.0), nyq * 0.95)
+        sos = signal.butter(order, cutoff / nyq, btype="highpass", output="sos")
+        real_filt = signal.sosfilt(sos, iq.real)
+        imag_filt = signal.sosfilt(sos, iq.imag)
+        return real_filt + 1j * imag_filt
+    elif filter_type == "bandpass":
+        c_low = min(max(cutoff_hz, 100.0), nyq * 0.9)
+        c_high = min(max(cutoff_high_hz, c_low + 500.0), nyq * 0.98)
+        sos = signal.butter(order, [c_low / nyq, c_high / nyq], btype="bandpass", output="sos")
+        real_filt = signal.sosfilt(sos, iq.real)
+        imag_filt = signal.sosfilt(sos, iq.imag)
+        return real_filt + 1j * imag_filt
+    elif filter_type == "equalizer" and eq_gains is not None and len(eq_gains) == 10:
+        n = len(iq)
+        freqs = np.fft.fftfreq(n, d=1.0 / fs)
+        spec = np.fft.fft(iq)
+        center_freqs = [70, 180, 320, 600, 1000, 3000, 6000, 12000, 14000, 16000]
+        abs_freqs = np.abs(freqs)
+        gains_linear = np.power(10.0, np.array(eq_gains, dtype=float) / 20.0)
+        gain_profile = np.interp(abs_freqs, center_freqs, gains_linear, left=gains_linear[0], right=gains_linear[-1])
+        shaped_spec = spec * gain_profile
+        return np.fft.ifft(shaped_spec)
+    return iq
+

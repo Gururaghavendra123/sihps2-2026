@@ -12,6 +12,8 @@ from sigid.dsp.analysis import (
     estimate_snr,
     estimate_symbol_rate,
     extract_constellation,
+    extract_eye_diagram,
+    apply_dsp_filter,
 )
 
 MODULATIONS = ["bpsk", "qpsk", "8psk", "16qam", "2fsk", "4fsk"]
@@ -75,3 +77,37 @@ def test_constellation_qpsk_four_clusters():
     dists = np.abs(angles[:, None] - ideal[None, :])
     min_dists = np.min(np.minimum(dists, 2 * np.pi - dists), axis=1)
     assert np.mean(min_dists) < 0.3  # radians, tight clustering expected
+
+
+def test_eye_diagram_extraction():
+    params = GenParams(n_payload_bits=1024, modulation="qpsk", fec="viterbi", interleaver="block", snr_db=25, sps=4, fs=200_000.0)
+    iq, _ = generate(params)
+    eye = extract_eye_diagram(iq, sps=4, trace_symbols=2, max_traces=20)
+    assert "traces_i" in eye and "traces_q" in eye and "t" in eye
+    assert len(eye["traces_i"]) > 0
+    assert len(eye["traces_q"]) > 0
+    assert len(eye["t"]) == 4 * 2  # sps * trace_symbols
+
+
+def test_dsp_filtering_and_equalization():
+    params = GenParams(n_payload_bits=1024, modulation="qpsk", fec="viterbi", interleaver="block", snr_db=25, sps=4, fs=200_000.0)
+    iq, _ = generate(params)
+    # Lowpass filter
+    lp_iq = apply_dsp_filter(iq, params.fs, filter_type="lowpass", cutoff_hz=20000.0)
+    assert len(lp_iq) == len(iq)
+    assert np.all(np.isfinite(lp_iq))
+
+    # Equalizer 10-band shaping
+    eq_gains = [3.0, 2.0, 1.0, 0.0, -1.0, -2.0, 0.0, 1.0, 2.0, 3.0]
+    eq_iq = apply_dsp_filter(iq, params.fs, filter_type="equalizer", eq_gains=eq_gains)
+    assert len(eq_iq) == len(iq)
+    assert np.all(np.isfinite(eq_iq))
+
+
+def test_custom_payload_generation():
+    custom_msg = "TOP_SECRET_SIGID_2026"
+    params = GenParams(n_payload_bits=256, modulation="qpsk", fec="viterbi", interleaver="block")
+    iq, gt = generate(params, custom_payload=custom_msg)
+    assert len(iq) > 0
+    assert gt["n_payload_bits"] == 256
+

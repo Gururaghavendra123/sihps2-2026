@@ -1,0 +1,5 @@
+name = "sig-id"
+compatibility_date = "2024-09-01"
+
+[assets]
+directory = "./src/sigid/web/static"
